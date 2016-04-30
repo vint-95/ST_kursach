@@ -199,16 +199,126 @@ namespace Kurs_Project_var25
         /// Кодирование по алгоритму Хэмминга
         /// </summary>
         /// <param name="information">Необработанный байт-массив с данными</param>
-        /// <returns>Закодированные данные</returns>
-        private byte[] HammingCoding(byte[] information)
+        static void HammingCoding(byte[] information)
         {
-            byte[] RefactoredInfo = new byte[information.Length];
-            unsafe 
-            {
+        //    byte[] msg = new byte[] { 1 }; //По идее, это байтовый массив с исходной инфой - т.е. byte[] information
 
-            }
-            return RefactoredInfo;
+        //    Code(ref msg);
+        //    Decode(ref msg);
+
+        //    for (int i = 0; i < msg.Length; ++i)
+        //        Console.Write(msg[i]);
+        //    Console.Read();
         }
+
+
+        //итог: первый байт - количество отбрасываемых бит при переводе в двоичную систему
+        //      второй - количество отбрасываемых бит в декодированном битовом массиве
+        static void Code(ref byte[] msg)
+        {
+            System.Collections.BitArray bitMsg = new System.Collections.BitArray(msg);
+            int numParts = bitMsg.Length / 11;
+            if (bitMsg.Length % 11 != 0) numParts++;
+            byte secondCheck = Convert.ToByte(11 - bitMsg.Length % 11);
+            System.Collections.BitArray codeBitMsg = new System.Collections.BitArray(numParts * 15);
+            for (int i = 0; i < numParts; ++i)
+            {
+                System.Collections.BitArray _15bitCodeArr = new System.Collections.BitArray(15);
+                for (int j = 10; j >= 0; --j)
+                {
+                    bool temp = (bitMsg.Length > i * 11 + j) ? bitMsg.Get(i * 11 + j) : false;
+                    if (j >= 4)
+                    {
+                        _15bitCodeArr.Set(j + 4, temp);
+                    }
+                    else if (j >= 1)
+                    {
+                        _15bitCodeArr.Set(j + 3, temp);
+                    }
+                    else
+                    {
+                        _15bitCodeArr.Set(2, temp);
+                    }
+                }
+                _15bitCodeArr[7] = _15bitCodeArr.Get(14) ^ _15bitCodeArr.Get(13) ^ _15bitCodeArr.Get(12) ^ _15bitCodeArr.Get(11) ^
+                                   _15bitCodeArr.Get(10) ^ _15bitCodeArr.Get(9) ^ _15bitCodeArr.Get(8);
+                _15bitCodeArr[3] = _15bitCodeArr.Get(14) ^ _15bitCodeArr.Get(13) ^ _15bitCodeArr.Get(12) ^ _15bitCodeArr.Get(11) ^
+                                   _15bitCodeArr.Get(6) ^ _15bitCodeArr.Get(5) ^ _15bitCodeArr.Get(4);
+                _15bitCodeArr[1] = _15bitCodeArr.Get(14) ^ _15bitCodeArr.Get(13) ^ _15bitCodeArr.Get(10) ^ _15bitCodeArr.Get(9) ^
+                                   _15bitCodeArr.Get(6) ^ _15bitCodeArr.Get(5) ^ _15bitCodeArr.Get(2);
+                _15bitCodeArr[0] = _15bitCodeArr.Get(14) ^ _15bitCodeArr.Get(12) ^ _15bitCodeArr.Get(10) ^ _15bitCodeArr.Get(8) ^
+                                   _15bitCodeArr.Get(6) ^ _15bitCodeArr.Get(4) ^ _15bitCodeArr.Get(2);
+                for (int j = 0; j < 15; ++j)
+                {
+                    codeBitMsg.Set(i * 15 + j, _15bitCodeArr.Get(j));
+                }
+            }
+            byte firstCheck = Convert.ToByte(8 - codeBitMsg.Length % 8);
+            int newSize = codeBitMsg.Length / 8 + ((codeBitMsg.Length % 8 == 0) ? 2 : 3);
+            msg = new byte[newSize];
+            msg[0] = firstCheck;
+            msg[1] = secondCheck;
+            codeBitMsg.CopyTo(msg, 2);
+            return;
+        }
+
+        static void Decode(ref byte[] msg)
+        {
+            byte firstCheck = msg[0];
+            byte secondCheck = msg[1];
+            int start = 16;
+            System.Collections.BitArray bitMsg = new System.Collections.BitArray(msg);
+            int length = bitMsg.Length - 16 - firstCheck;
+            int numParts = length / 15;
+            System.Collections.BitArray decodeBitMsg = new System.Collections.BitArray(numParts * 11 - secondCheck);
+            for (int i = 0; i < numParts; ++i)
+            {
+                int current = start + i * 15;
+                bool c1;
+                bool c2;
+                bool c3;
+                bool c4;
+                c4 = bitMsg.Get(current + 14) ^ bitMsg.Get(current + 13) ^ bitMsg.Get(current + 12) ^ bitMsg.Get(current + 11) ^
+                     bitMsg.Get(current + 10) ^ bitMsg.Get(current + 9) ^ bitMsg.Get(current + 8) ^ bitMsg.Get(current + 7);
+                c3 = bitMsg.Get(current + 14) ^ bitMsg.Get(current + 13) ^ bitMsg.Get(current + 12) ^ bitMsg.Get(current + 11) ^
+                     bitMsg.Get(current + 6) ^ bitMsg.Get(current + 5) ^ bitMsg.Get(current + 4) ^ bitMsg.Get(current + 3);
+                c2 = bitMsg.Get(current + 14) ^ bitMsg.Get(current + 13) ^ bitMsg.Get(current + 10) ^ bitMsg.Get(current + 9) ^
+                     bitMsg.Get(current + 6) ^ bitMsg.Get(current + 5) ^ bitMsg.Get(current + 2) ^ bitMsg.Get(current + 1);
+                c1 = bitMsg.Get(current + 14) ^ bitMsg.Get(current + 12) ^ bitMsg.Get(current + 10) ^ bitMsg.Get(current + 8) ^
+                     bitMsg.Get(current + 6) ^ bitMsg.Get(current + 4) ^ bitMsg.Get(current + 2) ^ bitMsg.Get(current);
+
+                if (c1 || c2 || c3 || c4)
+                {
+                    Console.WriteLine("ERROR! Error byte:" + i);
+                    return;
+                }
+                System.Collections.BitArray _11bitDecodeArr = new System.Collections.BitArray(11);
+                _11bitDecodeArr[0] = bitMsg.Get(current + 2);
+                _11bitDecodeArr[1] = bitMsg.Get(current + 4);
+                _11bitDecodeArr[2] = bitMsg.Get(current + 5);
+                _11bitDecodeArr[3] = bitMsg.Get(current + 6);
+                _11bitDecodeArr[4] = bitMsg.Get(current + 8);
+                _11bitDecodeArr[5] = bitMsg.Get(current + 9);
+                _11bitDecodeArr[6] = bitMsg.Get(current + 10);
+                _11bitDecodeArr[7] = bitMsg.Get(current + 11);
+                _11bitDecodeArr[8] = bitMsg.Get(current + 12);
+                _11bitDecodeArr[9] = bitMsg.Get(current + 13);
+                _11bitDecodeArr[10] = bitMsg.Get(current + 14);
+
+                for (int j = 0; j < 11; ++j)
+                {
+                    if (i * 11 + j < decodeBitMsg.Length)
+                        decodeBitMsg.Set(i * 11 + j, _11bitDecodeArr.Get(j));
+                }
+            }
+            int newSize = decodeBitMsg.Length / 8;
+            msg = new byte[newSize];
+            decodeBitMsg.CopyTo(msg, 0);
+            return;
+        }
+
+
+
 
         /// <summary>
         /// Декодирование по алгоритму Хэмминга
