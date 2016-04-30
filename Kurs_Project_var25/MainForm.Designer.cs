@@ -51,7 +51,6 @@
             this.ConnSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AuthorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SendOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.AcceptedSaveFileDialog = new System.Windows.Forms.SaveFileDialog();
@@ -72,9 +71,11 @@
             this.SendGroupBox.Controls.Add(this.PathSendLabel);
             this.SendGroupBox.Controls.Add(this.SendFileButton);
             this.SendGroupBox.Controls.Add(this.ChooseFileButton);
-            this.SendGroupBox.Location = new System.Drawing.Point(12, 56);
+            this.SendGroupBox.Location = new System.Drawing.Point(18, 86);
+            this.SendGroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.SendGroupBox.Name = "SendGroupBox";
-            this.SendGroupBox.Size = new System.Drawing.Size(773, 97);
+            this.SendGroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.SendGroupBox.Size = new System.Drawing.Size(1160, 149);
             this.SendGroupBox.TabIndex = 0;
             this.SendGroupBox.TabStop = false;
             this.SendGroupBox.Text = "Отправка";
@@ -82,40 +83,45 @@
             // SendNameLabel
             // 
             this.SendNameLabel.AutoSize = true;
-            this.SendNameLabel.Location = new System.Drawing.Point(6, 52);
+            this.SendNameLabel.Location = new System.Drawing.Point(9, 80);
+            this.SendNameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.SendNameLabel.Name = "SendNameLabel";
-            this.SendNameLabel.Size = new System.Drawing.Size(116, 13);
+            this.SendNameLabel.Size = new System.Drawing.Size(176, 20);
             this.SendNameLabel.TabIndex = 5;
             this.SendNameLabel.Text = "Отправляемый файл:";
             // 
             // SendProgressBar
             // 
-            this.SendProgressBar.Location = new System.Drawing.Point(9, 68);
+            this.SendProgressBar.Location = new System.Drawing.Point(14, 105);
+            this.SendProgressBar.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.SendProgressBar.Name = "SendProgressBar";
-            this.SendProgressBar.Size = new System.Drawing.Size(758, 23);
+            this.SendProgressBar.Size = new System.Drawing.Size(1137, 35);
             this.SendProgressBar.TabIndex = 4;
             // 
             // SendPathTextBox
             // 
-            this.SendPathTextBox.Location = new System.Drawing.Point(179, 21);
+            this.SendPathTextBox.Location = new System.Drawing.Point(268, 32);
+            this.SendPathTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.SendPathTextBox.Name = "SendPathTextBox";
-            this.SendPathTextBox.Size = new System.Drawing.Size(426, 20);
+            this.SendPathTextBox.Size = new System.Drawing.Size(637, 26);
             this.SendPathTextBox.TabIndex = 3;
             // 
             // PathSendLabel
             // 
             this.PathSendLabel.AutoSize = true;
-            this.PathSendLabel.Location = new System.Drawing.Point(6, 24);
+            this.PathSendLabel.Location = new System.Drawing.Point(9, 37);
+            this.PathSendLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.PathSendLabel.Name = "PathSendLabel";
-            this.PathSendLabel.Size = new System.Drawing.Size(167, 13);
+            this.PathSendLabel.Size = new System.Drawing.Size(253, 20);
             this.PathSendLabel.TabIndex = 2;
             this.PathSendLabel.Text = "Выберите отправляемый файл:";
             // 
             // SendFileButton
             // 
-            this.SendFileButton.Location = new System.Drawing.Point(692, 19);
+            this.SendFileButton.Location = new System.Drawing.Point(1038, 29);
+            this.SendFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.SendFileButton.Name = "SendFileButton";
-            this.SendFileButton.Size = new System.Drawing.Size(75, 23);
+            this.SendFileButton.Size = new System.Drawing.Size(112, 35);
             this.SendFileButton.TabIndex = 1;
             this.SendFileButton.Text = "Отправить";
             this.SendFileButton.UseVisualStyleBackColor = true;
@@ -123,9 +129,10 @@
             // 
             // ChooseFileButton
             // 
-            this.ChooseFileButton.Location = new System.Drawing.Point(611, 19);
+            this.ChooseFileButton.Location = new System.Drawing.Point(916, 29);
+            this.ChooseFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ChooseFileButton.Name = "ChooseFileButton";
-            this.ChooseFileButton.Size = new System.Drawing.Size(75, 23);
+            this.ChooseFileButton.Size = new System.Drawing.Size(112, 35);
             this.ChooseFileButton.TabIndex = 0;
             this.ChooseFileButton.Text = "Выбрать...";
             this.ChooseFileButton.UseVisualStyleBackColor = true;
@@ -138,9 +145,11 @@
             this.GetGroupBox.Controls.Add(this.ApplyButton);
             this.GetGroupBox.Controls.Add(this.GetMessageLabel);
             this.GetGroupBox.Controls.Add(this.GetProgressBar);
-            this.GetGroupBox.Location = new System.Drawing.Point(12, 159);
+            this.GetGroupBox.Location = new System.Drawing.Point(18, 245);
+            this.GetGroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.GetGroupBox.Name = "GetGroupBox";
-            this.GetGroupBox.Size = new System.Drawing.Size(773, 142);
+            this.GetGroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.GetGroupBox.Size = new System.Drawing.Size(1160, 218);
             this.GetGroupBox.TabIndex = 1;
             this.GetGroupBox.TabStop = false;
             this.GetGroupBox.Text = "Получение";
@@ -148,17 +157,19 @@
             // GetLabel
             // 
             this.GetLabel.AutoSize = true;
-            this.GetLabel.Location = new System.Drawing.Point(6, 97);
+            this.GetLabel.Location = new System.Drawing.Point(9, 149);
+            this.GetLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.GetLabel.Name = "GetLabel";
-            this.GetLabel.Size = new System.Drawing.Size(103, 13);
+            this.GetLabel.Size = new System.Drawing.Size(156, 20);
             this.GetLabel.TabIndex = 5;
             this.GetLabel.Text = "Получаемый файл:";
             // 
             // DeclineButton
             // 
-            this.DeclineButton.Location = new System.Drawing.Point(424, 70);
+            this.DeclineButton.Location = new System.Drawing.Point(636, 108);
+            this.DeclineButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.DeclineButton.Name = "DeclineButton";
-            this.DeclineButton.Size = new System.Drawing.Size(82, 23);
+            this.DeclineButton.Size = new System.Drawing.Size(123, 35);
             this.DeclineButton.TabIndex = 4;
             this.DeclineButton.Text = "Отклонить";
             this.DeclineButton.UseVisualStyleBackColor = true;
@@ -166,9 +177,10 @@
             // 
             // ApplyButton
             // 
-            this.ApplyButton.Location = new System.Drawing.Point(266, 70);
+            this.ApplyButton.Location = new System.Drawing.Point(399, 108);
+            this.ApplyButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ApplyButton.Name = "ApplyButton";
-            this.ApplyButton.Size = new System.Drawing.Size(82, 23);
+            this.ApplyButton.Size = new System.Drawing.Size(123, 35);
             this.ApplyButton.TabIndex = 3;
             this.ApplyButton.Text = "Подтвердить";
             this.ApplyButton.UseVisualStyleBackColor = true;
@@ -177,25 +189,28 @@
             // GetMessageLabel
             // 
             this.GetMessageLabel.AutoSize = true;
-            this.GetMessageLabel.Location = new System.Drawing.Point(231, 16);
+            this.GetMessageLabel.Location = new System.Drawing.Point(346, 25);
+            this.GetMessageLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.GetMessageLabel.Name = "GetMessageLabel";
-            this.GetMessageLabel.Size = new System.Drawing.Size(310, 39);
+            this.GetMessageLabel.Size = new System.Drawing.Size(470, 60);
             this.GetMessageLabel.TabIndex = 1;
             this.GetMessageLabel.Text = "Получен запрос на принятие нового файла. Принять файл?\r\n\r\nИмя файла:";
             // 
             // GetProgressBar
             // 
-            this.GetProgressBar.Location = new System.Drawing.Point(9, 113);
+            this.GetProgressBar.Location = new System.Drawing.Point(14, 174);
+            this.GetProgressBar.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.GetProgressBar.Name = "GetProgressBar";
-            this.GetProgressBar.Size = new System.Drawing.Size(758, 23);
+            this.GetProgressBar.Size = new System.Drawing.Size(1137, 35);
             this.GetProgressBar.TabIndex = 0;
             // 
             // InfoRTB
             // 
-            this.InfoRTB.Location = new System.Drawing.Point(12, 307);
+            this.InfoRTB.Location = new System.Drawing.Point(18, 472);
+            this.InfoRTB.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.InfoRTB.Name = "InfoRTB";
             this.InfoRTB.ReadOnly = true;
-            this.InfoRTB.Size = new System.Drawing.Size(773, 216);
+            this.InfoRTB.Size = new System.Drawing.Size(1158, 330);
             this.InfoRTB.TabIndex = 2;
             this.InfoRTB.Text = "Здесь будет отображаться информация о передаче файлов";
             // 
@@ -207,8 +222,9 @@
             this.AboutToolStripMenuItem});
             this.MainMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.MainMenuStrip.Name = "MainMenuStrip";
+            this.MainMenuStrip.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
             this.MainMenuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.MainMenuStrip.Size = new System.Drawing.Size(797, 24);
+            this.MainMenuStrip.Size = new System.Drawing.Size(1196, 35);
             this.MainMenuStrip.TabIndex = 3;
             // 
             // ProgramToolStripMenuItem
@@ -220,13 +236,13 @@
             this.ConnSettingsToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.ProgramToolStripMenuItem.Name = "ProgramToolStripMenuItem";
-            this.ProgramToolStripMenuItem.Size = new System.Drawing.Size(84, 20);
+            this.ProgramToolStripMenuItem.Size = new System.Drawing.Size(121, 29);
             this.ProgramToolStripMenuItem.Text = "Программа";
             // 
             // ChooseFileToolStripMenuItem
             // 
             this.ChooseFileToolStripMenuItem.Name = "ChooseFileToolStripMenuItem";
-            this.ChooseFileToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ChooseFileToolStripMenuItem.Size = new System.Drawing.Size(424, 30);
             this.ChooseFileToolStripMenuItem.Text = "Выбрать файл...";
             this.ChooseFileToolStripMenuItem.Click += new System.EventHandler(this.ChooseFileToolStripMenuItem_Click);
             // 
@@ -235,7 +251,7 @@
             this.AutoAcceptToolStripMenuItem.CheckOnClick = true;
             this.AutoAcceptToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.AutoAcceptToolStripMenuItem.Name = "AutoAcceptToolStripMenuItem";
-            this.AutoAcceptToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.AutoAcceptToolStripMenuItem.Size = new System.Drawing.Size(424, 30);
             this.AutoAcceptToolStripMenuItem.Text = "Автоматически подтверждать принятие";
             this.AutoAcceptToolStripMenuItem.Click += new System.EventHandler(this.AutoAcceptToolStripMenuItem_Click);
             // 
@@ -243,44 +259,36 @@
             // 
             this.RestoreLostPacketsToolStripMenuItem.CheckOnClick = true;
             this.RestoreLostPacketsToolStripMenuItem.Name = "RestoreLostPacketsToolStripMenuItem";
-            this.RestoreLostPacketsToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.RestoreLostPacketsToolStripMenuItem.Size = new System.Drawing.Size(424, 30);
             this.RestoreLostPacketsToolStripMenuItem.Text = "Прерывать передачу при ошибке?";
             this.RestoreLostPacketsToolStripMenuItem.Click += new System.EventHandler(this.RestoreLostPacketsToolStripMenuItem_Click);
             // 
             // ConnSettingsToolStripMenuItem
             // 
             this.ConnSettingsToolStripMenuItem.Name = "ConnSettingsToolStripMenuItem";
-            this.ConnSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ConnSettingsToolStripMenuItem.Size = new System.Drawing.Size(424, 30);
             this.ConnSettingsToolStripMenuItem.Text = "Свойства соединения";
             this.ConnSettingsToolStripMenuItem.Click += new System.EventHandler(this.ConnSettingsToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(424, 30);
             this.ExitToolStripMenuItem.Text = "Выход";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
             // AboutToolStripMenuItem
             // 
             this.AboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.HelpToolStripMenuItem,
             this.AuthorsToolStripMenuItem});
             this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
-            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(94, 20);
+            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(137, 29);
             this.AboutToolStripMenuItem.Text = "О программе";
-            // 
-            // HelpToolStripMenuItem
-            // 
-            this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
-            this.HelpToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
-            this.HelpToolStripMenuItem.Text = "Справка";
-            this.HelpToolStripMenuItem.Click += new System.EventHandler(this.HelpToolStripMenuItem_Click);
             // 
             // AuthorsToolStripMenuItem
             // 
             this.AuthorsToolStripMenuItem.Name = "AuthorsToolStripMenuItem";
-            this.AuthorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.AuthorsToolStripMenuItem.Size = new System.Drawing.Size(211, 30);
             this.AuthorsToolStripMenuItem.Text = "Об авторах";
             this.AuthorsToolStripMenuItem.Click += new System.EventHandler(this.AuthorsToolStripMenuItem_Click);
             // 
@@ -295,29 +303,31 @@
             this.MainStatusStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ConnectionStatusTSSL});
-            this.MainStatusStrip.Location = new System.Drawing.Point(0, 24);
+            this.MainStatusStrip.Location = new System.Drawing.Point(0, 35);
             this.MainStatusStrip.Name = "MainStatusStrip";
-            this.MainStatusStrip.Size = new System.Drawing.Size(797, 22);
+            this.MainStatusStrip.Padding = new System.Windows.Forms.Padding(2, 0, 21, 0);
+            this.MainStatusStrip.Size = new System.Drawing.Size(1196, 30);
             this.MainStatusStrip.SizingGrip = false;
             this.MainStatusStrip.TabIndex = 4;
             // 
             // ConnectionStatusTSSL
             // 
             this.ConnectionStatusTSSL.Name = "ConnectionStatusTSSL";
-            this.ConnectionStatusTSSL.Size = new System.Drawing.Size(77, 17);
+            this.ConnectionStatusTSSL.Size = new System.Drawing.Size(115, 25);
             this.ConnectionStatusTSSL.Text = "Соединение:";
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(797, 530);
+            this.ClientSize = new System.Drawing.Size(1196, 815);
             this.Controls.Add(this.MainStatusStrip);
             this.Controls.Add(this.InfoRTB);
             this.Controls.Add(this.GetGroupBox);
             this.Controls.Add(this.SendGroupBox);
             this.Controls.Add(this.MainMenuStrip);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "Передача данных через COM-порт";
@@ -355,7 +365,6 @@
         private System.Windows.Forms.ToolStripMenuItem ChooseFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AutoAcceptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AboutToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem HelpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AuthorsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog SendOpenFileDialog;

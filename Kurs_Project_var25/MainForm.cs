@@ -19,10 +19,10 @@ namespace Kurs_Project_var25
         private bool AutoApplying = false;   //Переменная для автоматического принятия файлов
         string SendedFileName;              //Имя отправляемого файла
         string AppliedFileName;             //Имя получаемого файла
-        //Thread SynchronizationThread;       //Потоки для ежесекундной обработки информации, 
+        Thread SynchronizationThread;       //Потоки для ежесекундной обработки информации, 
         Thread ConnectionThread;            //касающейся входящих данных и соединения
         FileStream SaveFileStream;          //Потоки для сохранения
-        //FileStream SendFileStream;          //и отправки файлов
+        FileStream SendFileStream;          //и отправки файлов
         SynchronizationContext UIContext;   //Вещь для синхронизации контролов в форме. Очень нужна для управления контролами из не-родных потоков
         bool ConnStatus = false;//Текущий статус порта
         bool RHeader = false;   //Получен заголовок
@@ -67,35 +67,30 @@ namespace Kurs_Project_var25
             COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
             COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
             COMPort.DtrEnable = true;
-            //SaveFileStream.
+            COMPort.RtsEnable = false;
+            COMPort.Handshake = Handshake.None;
+            //Restore = Properties.Settings.Default.Restore;
+            //COMPort.BaudRate = Properties.Settings.Default.BaudRate;
+            //COMPort.ReadTimeout = 500;
+            //COMPort.WriteTimeout = 500;
+            AutoApplying = Properties.Settings.Default.AutomatedGet;
+            UIContext = SynchronizationContext.Current;
+            ConnectionThread = new Thread(Connect);
+            SynchronizationThread = new Thread(ReadingThread);
+            COMPort.Open();
+            ConnectionThread.Start();
+            SynchronizationThread.Start();
+        }
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
 
+
+        #region Всё, что вряд ли будет меняться
         private void ChooseFileButton_Click(object sender, EventArgs e)
         {
             ChoosePath(false);
-        }
-
-        private void SendFileButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                COMPort.WriteLine("Soobchenie s porta " + COMPort.PortName); //Отсылаемое сообщение
-                COMPort.WriteLine("Put': " + SendPathTextBox.Text);
-                //InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
-
-                ////Ждём-с
-
-                //InfoRTB.AppendText("...Подтверждено");
-                //InfoRTB.AppendText("\nНачата пересылка файла " + SendedFileName);
-
-                ////Код для отсылки файла либо здесь, либо в потоке READ
-
-                //InfoRTB.AppendText("...Завершено");
-            }
-            catch
-            {
-                InfoRTB.AppendText("...Ошибка");
-            }
         }
 
         private void AuthorsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -117,12 +112,9 @@ namespace Kurs_Project_var25
             AutoApplying = AutoAcceptToolStripMenuItem.Checked;
         }
 
-        private void DeclineButton_Click(object sender, EventArgs e)
+        private void RestoreLostPacketsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GetMessage(false);
-
-            //Отправить на другой комп сигнал о том, что принятие файла отклонено
-            SendMessage('N');
+            Restore = RestoreLostPacketsToolStripMenuItem.Checked;
         }
 
         private void ChooseFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -159,6 +151,83 @@ namespace Kurs_Project_var25
             return false;
         }
 
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (Exit() == true)
+            {
+                this.Dispose();
+                Application.Exit();
+            }
+            else e.Cancel = true;
+        }
+
+        private bool Exit()
+        {
+            DialogResult Exit = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение выхода", MessageBoxButtons.YesNo);
+            if (Exit == DialogResult.Yes) return true;
+            else return false;
+        }
+
+        private void ConnSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var f = new SettingsForm();
+            f.ShowDialog();
+            if (f.flag == true)
+            {
+                DialogResult Reload = MessageBox.Show("Перезагрузить соединение для применения новых параметров?", "Подтверждение перезагрузки", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk);
+                if (Reload == DialogResult.Yes)
+                {
+                    COMPort.Close();
+                    COMPort.BaudRate = Properties.Settings.Default.BaudRate;
+                    COMPort.PortName = Properties.Settings.Default.ComName;
+                    COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
+                    COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
+                    COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
+                    COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
+                    COMPort.Open();
+                }
+            }
+        }
+        #endregion
+
+        private void SendFileButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                //COMPort.WriteLine("Soobchenie s porta " + COMPort.PortName); //Отсылаемое сообщение
+                //COMPort.WriteLine("Put': " + SendPathTextBox.Text);
+                InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
+
+                //Ждём-с
+                while(true)
+                {
+                    Thread.Sleep(200);
+                    if (COMPort.CtsHolding == true)
+                    {
+                        InfoRTB.AppendText("...Подтверждено");
+
+                        //Отослать первый пакет
+
+                        InfoRTB.AppendText("\nНачата пересылка файла " + SendedFileName);
+                        break;
+                    }
+                }
+                //InfoRTB.AppendText("...Завершено");
+            }
+            catch
+            {
+                InfoRTB.AppendText("...Ошибка");
+            }
+        }
+
+        private void DeclineButton_Click(object sender, EventArgs e)
+        {
+            GetMessage(false);
+
+            //Отправить на другой комп сигнал о том, что принятие файла отклонено
+            SendMessage('N');
+        }
+
         /// <summary>
         /// Скрытие контролов, отвечающих за принятие решения по поводу получаемых файлов
         /// </summary>
@@ -190,25 +259,18 @@ namespace Kurs_Project_var25
             SendMessage('Y');
         }
 
-        private void HelpToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //Потом напишу. По документации
-        }
-
         /// <summary>
         /// Кодирование по алгоритму Хэмминга
         /// </summary>
         /// <param name="information">Необработанный байт-массив с данными</param>
-        static void HammingCoding(byte[] information)
+        static byte[] HammingCoding(byte[] information, bool flag)
         {
-        //    byte[] msg = new byte[] { 1 }; //По идее, это байтовый массив с исходной инфой - т.е. byte[] information
-
-        //    Code(ref msg);
-        //    Decode(ref msg);
-
-        //    for (int i = 0; i < msg.Length; ++i)
-        //        Console.Write(msg[i]);
-        //    Console.Read();
+            //byte[] msg = new byte[] {}; //Вспомогательный массив для того, чтобы не затирать старый
+            if(flag == false)
+                Code(ref information);
+            else
+                Decode(ref information);
+            return information;
         }
 
 
@@ -318,50 +380,38 @@ namespace Kurs_Project_var25
         }
 
 
-
+        //public void oldConnect()
+        //{
+        //    int i = 0;
+        //    while (true)
+        //    {
+        //        Thread.Sleep(2000);
+        //        Random rand = new Random();
+        //        int IntRand = rand.Next(10000, 99999);
+        //        try
+        //        {
+        //            i++;
+        //            string g = "0-" + IntRand + "-" + i;
+        //            UIContext.Send(d => InfoRTB.AppendText("Сообщение отправлено: " + g), null);
+        //            COMPort.WriteLine(g);
+        //            string s = COMPort.ReadExisting();
+        //            UIContext.Send(d => InfoRTB.AppendText("\nСообщение принято: " + s), null);
+        //        }
+        //        catch (TimeoutException)
+        //        {
+        //            UIContext.Send(d => InfoRTB.AppendText("\nВремя ожидания передачи/приёма сообщения истекло"), null);
+        //        }
+        //    }
+        //}
 
         /// <summary>
-        /// Декодирование по алгоритму Хэмминга
+        /// Функция, принимаемая потоком. Служит для соединения двух компьютеров и обозначения текущего статуса соединения
         /// </summary>
-        /// <param name="information">Закодированные Хэммингом данные</param>
-        /// <returns>Декодированные данные</returns>
-        private byte[] HammingDecoding(byte[] information)
+        private void Connect()
         {
-            byte[] RefactoredInfo = new byte[information.Length];
-            unsafe {
-
-            }
-            return RefactoredInfo;
-        }
-
-        public void Connect()
-        {
-            int i = 0;
             while (true)
             {
                 Thread.Sleep(2000);
-                Random rand = new Random();
-                int IntRand = rand.Next(10000, 99999);
-                try
-                {
-                    i++;
-                    string g = "0-" + IntRand + "-" + i;
-                    UIContext.Send(d => InfoRTB.AppendText("Сообщение отправлено: " + g), null);
-                    COMPort.WriteLine(g);
-                    string s = COMPort.ReadExisting();
-                    UIContext.Send(d => InfoRTB.AppendText("\nСообщение принято: " + s), null);
-                }
-                catch (TimeoutException)
-                {
-                    UIContext.Send(d => InfoRTB.AppendText("\nВремя ожидания передачи/приёма сообщения истекло"), null);
-                }
-            }
-        }
-
-        private void NewConnect()
-        {
-            while (true)
-            {
                 try
                 {
                     if ((COMPort.DsrHolding == true) & (RHeader == false) & (SHeader == false))
@@ -376,92 +426,41 @@ namespace Kurs_Project_var25
                     }
                     if (((RHeader == true) || (SHeader == true)) & (ConnStatus == false))
                     {
-                        SendMessage('E');
+
+                        //Добавить сохранение индекса для восстановления передачи
+
+                        //SendMessage('E');
                         UIContext.Send(d => InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана."), null);
-                        RHeader = false;
-                        RData = false;
-                        RHeader = false;
-                        SData = false;
+                        //RHeader = false;
+                        //RData = false;
+                        //RHeader = false;
+                        //SData = false;
                         //SaveFileStream.Close();
                         //SaveFileStream.Dispose();
                         //SendFileStream.Close();
                         //SendFileStream.Dispose();
                     }
                 }
-                catch
+                catch (TimeoutException)
                 {
-                    //Что-то для обозначения того, что порт недоступен
+                    UIContext.Send(d => InfoRTB.AppendText("\nВремя ожидания передачи/приёма сообщения истекло"), null);
                 }
             }
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-            AutoApplying = Properties.Settings.Default.AutomatedGet;
-            Restore = Properties.Settings.Default.Restore;
-            COMPort.BaudRate = Properties.Settings.Default.BaudRate;
-            COMPort.Handshake = Handshake.None;
-            COMPort.DtrEnable = true;
-            COMPort.RtsEnable = false;
-            COMPort.ReadTimeout = 500;
-            COMPort.WriteTimeout = 500;
-            UIContext = SynchronizationContext.Current;
-            ConnectionThread = new Thread(Connect);
-            //SynchronizationThread = new Thread(ReadingThread);
-            COMPort.Open();
-            ConnectionThread.Start();
-            //SynchronizationThread.Start();
-        }
+
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             Properties.Settings.Default.AutomatedGet = AutoApplying;
             Properties.Settings.Default.Restore = Restore;
             ConnStatus = false;
-            //SynchronizationThread.Abort();
+            SynchronizationThread.Abort();
             ConnectionThread.Abort();
             COMPort.Close();
-            //foreach (Process currentProcess in Process.GetProcessesByName("Kurs_Project_var25"))
-            //    currentProcess.Kill();
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (Exit() == true)
-            {
-                this.Dispose();
-                Application.Exit();
-            }
-            else e.Cancel = true;
-        }
 
-        private bool Exit()
-        {
-            DialogResult Exit = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение выхода", MessageBoxButtons.YesNo);
-            if (Exit == DialogResult.Yes) return true;
-            else return false;
-        }
-
-        private void ConnSettingsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var f = new SettingsForm();
-            f.ShowDialog();
-            if (f.flag == true)
-            {
-                DialogResult Reload = MessageBox.Show("Перезагрузить соединение для применения новых параметров?", "Подтверждение перезагрузки", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk);
-                if (Reload == DialogResult.Yes)
-                {
-                    COMPort.Close();
-                    COMPort.BaudRate = Properties.Settings.Default.BaudRate;
-                    COMPort.PortName = Properties.Settings.Default.ComName;
-                    COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
-                    COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
-                    COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
-                    COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
-                    COMPort.Open();
-                }
-            }
-        }
 
         private void SendMessage(char TypeOfMessage)
         {
@@ -851,11 +850,6 @@ namespace Kurs_Project_var25
                             }
                       }
             }
-
-        private void RestoreLostPacketsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Restore = RestoreLostPacketsToolStripMenuItem.Checked;
-        }
     }
 }
 
