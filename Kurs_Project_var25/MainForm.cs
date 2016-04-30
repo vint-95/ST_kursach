@@ -47,15 +47,15 @@ namespace Kurs_Project_var25
 #if DEBUG
             if(Properties.Settings.Default.TestValue==false)
             {
-                COMPort.PortName = "COM6";
+                COMPort.PortName = "COM16";
                 Properties.Settings.Default.TestValue = true;
-                InfoRTB.AppendText("\nCOM6\n");
+                InfoRTB.AppendText("\n"+ COMPort.PortName +"\n");
             }
             else
             {
-                COMPort.PortName = "COM7";
+                COMPort.PortName = "COM17";
                 Properties.Settings.Default.TestValue = false;
-                InfoRTB.AppendText("\nCOM7\n");
+                InfoRTB.AppendText("\n" + COMPort.PortName + "\n");
             }
             Properties.Settings.Default.Save();
 #else
