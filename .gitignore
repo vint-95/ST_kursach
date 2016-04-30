@@ -1,0 +1,21 @@
+#Untracked types of files
+*.suo
+*.obj
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.tlb
+*.tln
+*.bak
+*.cache
+*.ilk
+*.dll
+*.lib
+*.sbr
+#Untracked folders
