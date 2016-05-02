@@ -504,8 +504,8 @@ namespace Kurs_Project_var25
         {
             byte[] VByte = new byte [] {};
             int index = 0;
-            byte ID_File = 154;       //Идентификатор для файла
-            uint ID_Package = 546679653;   //Идентификатор для пакета
+            byte ID_File = 154;             //Идентификатор для файла
+            uint ID_Package = 546679653;    //Идентификатор для пакета
             switch(Type)
             {
                 case 'I':
@@ -553,11 +553,24 @@ namespace Kurs_Project_var25
                     break;
 
                 case 'H':
+                    string lol = "djfgoprdeg";
 
+                    byte[] mas;
                     break;
 
                 case 'F':
-
+                VByte = new byte[5];
+                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
+                index++;
+                VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                index++;
+                VByte[index] = ID_File;
+                index++;
+                byte PhaseFinalization = 1;
+                VByte[index] = PhaseFinalization;
+                index++;
+                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
+                COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
 
                 case 'Y':
@@ -573,7 +586,7 @@ namespace Kurs_Project_var25
                     break;
 
                 case 'N':
-                                    VByte = new byte[4];
+                VByte = new byte[4];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                 index++;
                 VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
