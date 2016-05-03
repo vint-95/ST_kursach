@@ -176,5 +176,17 @@ namespace Kurs_Project_var25.Properties {
                 this["NotCompletedFilesIDs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SequentialMode {
+            get {
+                return ((bool)(this["SequentialMode"]));
+            }
+            set {
+                this["SequentialMode"] = value;
+            }
+        }
     }
 }

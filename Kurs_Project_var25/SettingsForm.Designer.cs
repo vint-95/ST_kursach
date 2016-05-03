@@ -42,16 +42,20 @@
             this.ReadNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.WorkGB = new System.Windows.Forms.GroupBox();
+            this.SequentialRB = new System.Windows.Forms.RadioButton();
+            this.ParallelRB = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.InBufferNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.OutBufferNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.WriteNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadNumericUpDown)).BeginInit();
+            this.WorkGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // CancelButton
             // 
             this.CancelButton.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.CancelButton.Location = new System.Drawing.Point(0, 264);
+            this.CancelButton.Location = new System.Drawing.Point(0, 343);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(354, 23);
             this.CancelButton.TabIndex = 0;
@@ -62,7 +66,7 @@
             // OKButton
             // 
             this.OKButton.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.OKButton.Location = new System.Drawing.Point(0, 241);
+            this.OKButton.Location = new System.Drawing.Point(0, 320);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(354, 23);
             this.OKButton.TabIndex = 1;
@@ -73,7 +77,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(44, 60);
+            this.label1.Location = new System.Drawing.Point(44, 142);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(155, 13);
             this.label1.TabIndex = 2;
@@ -96,7 +100,7 @@
             "56000",
             "57600",
             "115200"});
-            this.BaudRateComboBox.Location = new System.Drawing.Point(209, 58);
+            this.BaudRateComboBox.Location = new System.Drawing.Point(209, 140);
             this.BaudRateComboBox.Name = "BaudRateComboBox";
             this.BaudRateComboBox.Size = new System.Drawing.Size(120, 21);
             this.BaudRateComboBox.TabIndex = 3;
@@ -104,7 +108,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(61, 96);
+            this.label2.Location = new System.Drawing.Point(61, 178);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(138, 13);
             this.label2.TabIndex = 4;
@@ -113,7 +117,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(53, 132);
+            this.label3.Location = new System.Drawing.Point(53, 214);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(146, 13);
             this.label3.TabIndex = 5;
@@ -121,7 +125,7 @@
             // 
             // InBufferNumericUpDown
             // 
-            this.InBufferNumericUpDown.Location = new System.Drawing.Point(209, 95);
+            this.InBufferNumericUpDown.Location = new System.Drawing.Point(209, 177);
             this.InBufferNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -143,7 +147,7 @@
             // 
             // OutBufferNumericUpDown
             // 
-            this.OutBufferNumericUpDown.Location = new System.Drawing.Point(209, 131);
+            this.OutBufferNumericUpDown.Location = new System.Drawing.Point(209, 213);
             this.OutBufferNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -166,7 +170,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(108, 24);
+            this.label4.Location = new System.Drawing.Point(108, 106);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(91, 13);
             this.label4.TabIndex = 8;
@@ -175,14 +179,14 @@
             // ComPortComboBox
             // 
             this.ComPortComboBox.FormattingEnabled = true;
-            this.ComPortComboBox.Location = new System.Drawing.Point(209, 21);
+            this.ComPortComboBox.Location = new System.Drawing.Point(209, 103);
             this.ComPortComboBox.Name = "ComPortComboBox";
             this.ComPortComboBox.Size = new System.Drawing.Size(120, 21);
             this.ComPortComboBox.TabIndex = 9;
             // 
             // WriteNumericUpDown
             // 
-            this.WriteNumericUpDown.Location = new System.Drawing.Point(209, 203);
+            this.WriteNumericUpDown.Location = new System.Drawing.Point(209, 285);
             this.WriteNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -199,7 +203,7 @@
             // 
             // ReadNumericUpDown
             // 
-            this.ReadNumericUpDown.Location = new System.Drawing.Point(209, 167);
+            this.ReadNumericUpDown.Location = new System.Drawing.Point(209, 249);
             this.ReadNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -217,7 +221,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(104, 204);
+            this.label5.Location = new System.Drawing.Point(104, 286);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(95, 13);
             this.label5.TabIndex = 11;
@@ -226,17 +230,51 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(106, 168);
+            this.label6.Location = new System.Drawing.Point(106, 250);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(93, 13);
             this.label6.TabIndex = 10;
             this.label6.Text = "Тайм-аут чтения:";
             // 
+            // WorkGB
+            // 
+            this.WorkGB.Controls.Add(this.ParallelRB);
+            this.WorkGB.Controls.Add(this.SequentialRB);
+            this.WorkGB.Location = new System.Drawing.Point(12, 12);
+            this.WorkGB.Name = "WorkGB";
+            this.WorkGB.Size = new System.Drawing.Size(317, 79);
+            this.WorkGB.TabIndex = 14;
+            this.WorkGB.TabStop = false;
+            this.WorkGB.Text = "Режим работы";
+            // 
+            // SequentialRB
+            // 
+            this.SequentialRB.AutoSize = true;
+            this.SequentialRB.Location = new System.Drawing.Point(20, 23);
+            this.SequentialRB.Name = "SequentialRB";
+            this.SequentialRB.Size = new System.Drawing.Size(124, 17);
+            this.SequentialRB.TabIndex = 0;
+            this.SequentialRB.TabStop = true;
+            this.SequentialRB.Text = "Последовательный";
+            this.SequentialRB.UseVisualStyleBackColor = true;
+            // 
+            // ParallelRB
+            // 
+            this.ParallelRB.AutoSize = true;
+            this.ParallelRB.Location = new System.Drawing.Point(20, 47);
+            this.ParallelRB.Name = "ParallelRB";
+            this.ParallelRB.Size = new System.Drawing.Size(101, 17);
+            this.ParallelRB.TabIndex = 1;
+            this.ParallelRB.TabStop = true;
+            this.ParallelRB.Text = "Параллельный";
+            this.ParallelRB.UseVisualStyleBackColor = true;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(354, 287);
+            this.ClientSize = new System.Drawing.Size(354, 366);
+            this.Controls.Add(this.WorkGB);
             this.Controls.Add(this.WriteNumericUpDown);
             this.Controls.Add(this.ReadNumericUpDown);
             this.Controls.Add(this.label5);
@@ -259,6 +297,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.OutBufferNumericUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.WriteNumericUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadNumericUpDown)).EndInit();
+            this.WorkGB.ResumeLayout(false);
+            this.WorkGB.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -280,5 +320,8 @@
         private System.Windows.Forms.NumericUpDown ReadNumericUpDown;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.GroupBox WorkGB;
+        private System.Windows.Forms.RadioButton ParallelRB;
+        private System.Windows.Forms.RadioButton SequentialRB;
     }
 }

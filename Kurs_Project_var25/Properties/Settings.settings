@@ -41,5 +41,8 @@
     <Setting Name="NotCompletedFilesIDs" GenerateDefaultValueInCode="false" Type="System.Collections.ArrayList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="SequentialMode" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
