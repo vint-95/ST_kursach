@@ -1,9 +1,9 @@
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe.config
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.MainForm.resources
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.Properties.Resources.resources
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.SettingsForm.resources
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csproj.GenerateResource.Cache
-C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
-C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.exe
 C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.pdb

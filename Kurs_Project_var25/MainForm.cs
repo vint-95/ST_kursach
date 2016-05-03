@@ -21,6 +21,7 @@ namespace Kurs_Project_var25
         string AppliedFileName;             //Имя получаемого файла
         Thread SynchronizationThread;       //Потоки для ежесекундной обработки информации, 
         Thread ConnectionThread;            //касающейся входящих данных и соединения
+        Thread TestThread;
         FileStream SaveFileStream;          //Потоки для сохранения
         FileStream SendFileStream;          //и отправки файлов
         SynchronizationContext UIContext;   //Вещь для синхронизации контролов в форме. Очень нужна для управления контролами из не-родных потоков
@@ -100,10 +101,11 @@ namespace Kurs_Project_var25
             AutoApplying = Properties.Settings.Default.AutomatedGet;
             UIContext = SynchronizationContext.Current;
             ConnectionThread = new Thread(Connect);
-            //SynchronizationThread = new Thread(ReadingThread);
+            SynchronizationThread = new Thread(ReadingThread);
+            TestThread = new Thread(TestThreadFunc);
             COMPort.Open();
             ConnectionThread.Start();
-            //SynchronizationThread.Start();
+            SynchronizationThread.Start();
             InfoRTB.Visible = false;
             this.Size = new Size(803, 330);
         }
@@ -129,6 +131,8 @@ namespace Kurs_Project_var25
             if (Exit() == true)
             {
                 ConnectionThread.Abort();
+                SynchronizationThread.Abort();
+                TestThread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -183,6 +187,8 @@ namespace Kurs_Project_var25
             if (Exit() == true)
             {
                 ConnectionThread.Abort();
+                SynchronizationThread.Abort();
+                TestThread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -216,102 +222,6 @@ namespace Kurs_Project_var25
                 }
             }
         }
-        #endregion
-
-        private void SendFileButton_Click(object sender, EventArgs e)
-        {
-            //try
-            //{
-                //Заносим в буфер недопереданных файлов (не недокачанных!)
-                if (Properties.Settings.Default.NotCompletedFiles != null)
-                {
-                    IndexOfFile = (byte)Properties.Settings.Default.NotCompletedFiles.Count;
-                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
-                    Properties.Settings.Default.Save();
-                }
-                else
-                {
-                    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
-                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
-                    Properties.Settings.Default.Save();
-                }
-
-                //if (Properties.Settings.Default.ID_File != null)
-                //{
-                //    IndexOfFile = (byte)Properties.Settings.Default.ID_File.Count;
-                //    //IndexOfFile++;
-                //}
-                //else
-                //{
-                //    Properties.Settings.Default.ID_File = new System.Collections.ArrayList();
-                //    Properties.Settings.Default.ID_File.Add((byte)0);
-                //    //Properties.Settings.Default.ID_File.RemoveAt(0);
-                //    Properties.Settings.Default.Save();
-                //}
-
-                PartPacking(new byte[] {}, 'H', (uint)SendedFileName.Length);
-                InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
-                GetMessage(false);
-            //}
-            //catch
-            //{
-            //    InfoRTB.AppendText("...Ошибка");
-            //}
-        }
-
-        private void DeclineButton_Click(object sender, EventArgs e)
-        {
-            GetMessage(false);
-
-            //Отправить на другой комп сигнал о том, что принятие файла отклонено
-            PartPacking(new byte[] { }, 'N', 0);
-        }
-
-        /// <summary>
-        /// Скрытие контролов, отвечающих за принятие решения по поводу получаемых файлов
-        /// </summary>
-        /// <param name="flag">false - скрываем, true - нутыпонял</param>
-        private void GetMessage(bool flag)
-        {
-            if (flag == false)
-            {
-                GetMessageLabel.Visible = false;
-                ApplyButton.Visible = false;
-                DeclineButton.Visible = false;
-            }
-            else
-            {
-                GetMessageLabel.Visible = true;
-                ApplyButton.Visible = true;
-                DeclineButton.Visible = true;
-                GetMessageLabel.Text = "Получен запрос на принятие нового файла. Принять файл?\n\nИмя файла: " + AppliedFileName;
-            }
-        }
-
-        private void ApplyButton_Click(object sender, EventArgs e)
-        {
-            ChoosePath(true);
-            GetMessage(false);
-            GetLabel.Text = "Получаемый файл: " + AppliedFileName;
-
-            //Отправить сигнал о том, что разрешено отсылать файл
-            //SendMessage('Y');
-        }
-
-        /// <summary>
-        /// Кодирование по алгоритму Хэмминга
-        /// </summary>
-        /// <param name="information">Необработанный байт-массив с данными</param>
-        static byte[] HammingCoding(byte[] information, bool flag)
-        {
-            //byte[] msg = new byte[] {}; //Вспомогательный массив для того, чтобы не затирать старый
-            if(flag == false)
-                Code(ref information);
-            else
-                Decode(ref information);
-            return information;
-        }
-
 
         //итог: первый байт - количество отбрасываемых бит при переводе в двоичную систему
         //      второй - количество отбрасываемых бит в декодированном битовом массиве
@@ -418,30 +328,81 @@ namespace Kurs_Project_var25
             decodeBitMsg.CopyTo(msg, 0);
             return;
         }
+        #endregion
 
-        //public void oldConnect()
-        //{
-        //    int i = 0;
-        //    while (true)
-        //    {
-        //        Thread.Sleep(2000);
-        //        Random rand = new Random();
-        //        int IntRand = rand.Next(10000, 99999);
-        //        try
-        //        {
-        //            i++;
-        //            string g = "0-" + IntRand + "-" + i;
-        //            UIContext.Send(d => InfoRTB.AppendText("Сообщение отправлено: " + g), null);
-        //            COMPort.WriteLine(g);
-        //            string s = COMPort.ReadExisting();
-        //            UIContext.Send(d => InfoRTB.AppendText("\nСообщение принято: " + s), null);
-        //        }
-        //        catch (TimeoutException)
-        //        {
-        //            UIContext.Send(d => InfoRTB.AppendText("\nВремя ожидания передачи/приёма сообщения истекло"), null);
-        //        }
-        //    }
-        //}
+        private void SendFileButton_Click(object sender, EventArgs e)
+        {
+                //Заносим в буфер недопереданных файлов (не недокачанных!)
+                if (Properties.Settings.Default.NotCompletedFiles != null)
+                {
+                    IndexOfFile = (byte)Properties.Settings.Default.NotCompletedFiles.Count;
+                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
+                    Properties.Settings.Default.Save();
+                }
+                else
+                {
+                    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
+                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
+                    Properties.Settings.Default.Save();
+                }
+
+                PartPacking(new byte[] {}, 'H', (uint)SendedFileName.Length);
+                SHeader = true;
+                InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
+        }
+
+        private void DeclineButton_Click(object sender, EventArgs e)
+        {
+            GetMessage(false);
+
+            //Отправить на другой комп сигнал о том, что принятие файла отклонено
+            PartPacking(new byte[] { }, 'N', 0);
+        }
+
+        /// <summary>
+        /// Скрытие контролов, отвечающих за принятие решения по поводу получаемых файлов
+        /// </summary>
+        /// <param name="flag">false - скрываем, true - нутыпонял</param>
+        private void GetMessage(bool flag)
+        {
+            if (flag == false)
+            {
+                UIContext.Send(io => GetMessageLabel.Visible = false, null);
+                UIContext.Send(io => ApplyButton.Visible = false, null);
+                UIContext.Send(io => DeclineButton.Visible = false, null);
+            }
+            else
+            {
+                UIContext.Send(io => GetMessageLabel.Visible = true, null);
+                UIContext.Send(io => ApplyButton.Visible = true, null);
+                UIContext.Send(io => DeclineButton.Visible = true, null);
+                UIContext.Send(io => GetMessageLabel.Text = "Получен запрос на принятие нового файла. Принять файл?\n\nИмя файла: " + AppliedFileName, null); 
+            }
+        }
+
+        private void ApplyButton_Click(object sender, EventArgs e)
+        {
+            ChoosePath(true);
+            GetMessage(false);
+            GetLabel.Text = "Получаемый файл: " + AppliedFileName;
+
+            //Отправить сигнал о том, что разрешено отсылать файл
+            PartPacking(new byte[] { }, 'Y', 0);
+        }
+
+        /// <summary>
+        /// Кодирование по алгоритму Хэмминга
+        /// </summary>
+        /// <param name="information">Необработанный байт-массив с данными</param>
+        static byte[] HammingCoding(ref byte[] information, bool flag)
+        {
+            //byte[] msg = new byte[] {}; //Вспомогательный массив для того, чтобы не затирать старый. Нафиг его
+            if(flag == false)
+                Code(ref information);
+            else
+                Decode(ref information);
+            return information;
+        }
 
         /// <summary>
         /// Функция, принимаемая потоком. Служит для соединения двух компьютеров и обозначения текущего статуса соединения
@@ -455,23 +416,23 @@ namespace Kurs_Project_var25
                 {
                     if (COMPort.IsOpen == true)
                     {
-                        if ((COMPort.DsrHolding == true) & (RHeader == false) & (SHeader == false))
+                        if (COMPort.DsrHolding == true)
                         {
                             ConnStatus = true;
                             UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: активно", null);
                         }
-                        if ((COMPort.DsrHolding == false) & (RHeader == false) & (SHeader == false))
+                        if (COMPort.DsrHolding == false)
                         {
                             ConnStatus = false;
                             UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: отсутствует", null);
                         }
                         if (((RHeader == true) || (SHeader == true)) & (ConnStatus == false))
                         {
+                            //Добавить сохранение индекса для восстановления передачи (но не сюда)
 
-                            //Добавить сохранение индекса для восстановления передачи
-
-                            //SendMessage('E');
+                            
                             UIContext.Send(d => InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана."), null);
+                            
                             //RHeader = false;
                             //RData = false;
                             //RHeader = false;
@@ -496,24 +457,10 @@ namespace Kurs_Project_var25
             Properties.Settings.Default.Restore = Restore;
             ConnStatus = false;
             SynchronizationThread.Abort();
+            TestThread.Abort();
             ConnectionThread.Abort();
             COMPort.Close();
         }
-
-        //private void SendMessage(char TypeOfMessage)
-        //{
-
-        //    #region
-        //    //COMPort.RtsEnable = false;
-        //    //if (TypeOfMessage == 'I')
-        //    //    COMPort.Write(PartPacking(WriteData, TypeOfMessage, WriteData.Length), 0, PartPacking(WriteData, TypeOfMessage, WriteData.Length).Length);
-        //    //else if (TypeOfMessage == 'A') { }
-        //    //COMPort.Write(PartPacking(ToByteMas(SendedFileName), TypeOfMessage, SendedFileName.Length * 8), 0, ??);
-        //    //else
-        //    //    COMPort.Write(PartPacking(null, TypeOfMessage, 0), 0, PartPacking(null, TypeOfMessage, 0).Length);
-        //    //COMPort.RtsEnable = true;
-        //    #endregion
-        //}
 
         private void IntToByte(uint Number, ref int index, byte [] VByte)
         {
@@ -524,6 +471,7 @@ namespace Kurs_Project_var25
                 index++;
             }
         }
+
         private uint ByteToInt(byte[] VByte, int index)
         {
             byte[] qq = new byte[4];                        //Вспомогательный массив для выписывания длины инфочасти
@@ -549,7 +497,7 @@ namespace Kurs_Project_var25
             uint ID_Package = 546679653;    //Идентификатор для пакета
             switch(Type)
             {
-                #region
+                #region I
                 case 'I':
                 VByte = new byte[Length + 12];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -574,14 +522,15 @@ namespace Kurs_Project_var25
                 VByte[index] = ID_File;
                 index++;
                 IntToByte(ID_Package, ref index, VByte);
-                uint tr = ByteToInt(VByte,7);
+                //uint tr = ByteToInt(VByte,7);
+                Code(ref InfByte);
                 for (int j = 0; index < Length + 3; index++, j++) //Запись в массив инфочасти
                     VByte[index] = InfByte[j];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
                 #endregion
-                #region
+                #region A
                 case 'A':
                 VByte = new byte[8];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -595,7 +544,7 @@ namespace Kurs_Project_var25
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
                 #endregion
-                #region
+                #region H
                 case 'H':
                 VByte = new byte[Length + 4];
                 //string lol = "djfgoprdeg sefsefg 32453htgfrdr4 -5t4-eyh-rkt43"; //Проверка занесения имени файла
@@ -615,7 +564,7 @@ namespace Kurs_Project_var25
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
                 #endregion
-                #region
+                #region F
                 case 'F':
                 VByte = new byte[5];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -631,7 +580,7 @@ namespace Kurs_Project_var25
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
                 #endregion
-                #region
+                #region Y
                 case 'Y':
                 VByte = new byte[4];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -644,7 +593,7 @@ namespace Kurs_Project_var25
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
                 #endregion
-                #region
+                #region N
                 case 'N':
                 VByte = new byte[4];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -660,7 +609,7 @@ namespace Kurs_Project_var25
                 default:
                     break;
             }
-            #region
+            #region /b/
             //if (InfByte != null)
             //{
             //    VByte = new byte[Length + 4];
@@ -682,6 +631,16 @@ namespace Kurs_Project_var25
             return VByte;
         }
 
+        private void TestThreadFunc()
+        {
+            byte[] InfoBuffer = new byte[15] { 3, 45, 5, 37, 96, 53, 78, 4, 8, 5, 54, 78, 3, 45, 5 };
+            while (true)
+            {
+                Thread.Sleep(1000);
+                PartPacking(InfoBuffer, 'I', Convert.ToUInt32(InfoBuffer.Length));
+            }
+        }
+
         /// <summary>
         /// Функция, отвечающая за чтение и интерпретацию входных данных
         /// Пока не работает, надо разобрать
@@ -690,16 +649,25 @@ namespace Kurs_Project_var25
         {
             while (true)
             {
+                Thread.Sleep(10);
                 //Будет работать, если порт открыт и готов к приёму
                 //while (ConnStatus == true && COMPort.CtsHolding == true)
                 //{
                 #region Чтение данных из потока
-                //string HeaderInfo = "";
-                //string InputMessage = "";
-                //string TempMessage = "";
-                byte[] InfoBuffer = new byte[25999];
-                PartPacking(InfoBuffer, 'H', Convert.ToUInt32(InfoBuffer.Length));
-                //COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
+                
+                
+                //PartPacking(InfoBuffer, 'H', Convert.ToUInt32(InfoBuffer.Length));
+                byte[] InfoBuffer = new byte[]{};
+                Array.Resize(ref InfoBuffer, COMPort.BytesToRead);
+                string g = COMPort.ReadExisting();
+
+                char[] m =g.ToArray();
+                int d = 0;
+                foreach (char n in m)
+                {
+                    InfoBuffer[d] = Convert.ToByte(n);
+                    d++;
+                }
 
                 //for (int i = 0; COMPort.BytesToRead > 0; i++)
                 //{
@@ -714,86 +682,98 @@ namespace Kurs_Project_var25
                 //    //Thread.Sleep(30);
                 //}
                 #endregion
-                #region Декодирование
-                byte[] HelpBuffer = new byte[] { };
-                if (InfoBuffer[0] == Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier) & InfoBuffer.Count() != 0)
-                //Выполнить декодирование
+                if (InfoBuffer.Length!=0)
                 {
-                    Array.Resize(ref HelpBuffer, InfoBuffer.Count() - 2);
-                    for (int i = 1; i < InfoBuffer.Count()-1; i++)
-                        HelpBuffer[i - 1] = InfoBuffer[i];
-                    Decode(ref HelpBuffer);
-                }
-                #endregion
-                #region Основная часть
-                char TypeOfPacket = Convert.ToChar(HelpBuffer[0]);
-                switch(TypeOfPacket)
-                {
-                    #region Информационные пакеты
-                    case 'I':
-                        {
-
-                        }
-                        break;
+                    #region Декодирование
+                    byte[] HelpBuffer = new byte[] { };
+                    if (InfoBuffer.Count() != 0) //InfoBuffer[0] == Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier) &
+                    //Выполнить декодирование
+                    {
+                        Array.Resize(ref HelpBuffer, InfoBuffer.Count() - 2);
+                        for (int i = 1; i < InfoBuffer.Count() - 1; i++)
+                            HelpBuffer[i - 1] = InfoBuffer[i];
+                        //Decode(ref HelpBuffer);
+                    }
                     #endregion
-                    #region ACK-пакеты: отвечают за подтверждение принятия инфопакет или за запрос на повторную передачу
-                    case 'A':
-                        {
-
-                        }
-                        break;
-                    #endregion
-                    #region HEAD-пакеты: передают инфо о названии файла
-                    case 'H':
-                        {
-                            RHeader = true;
-                        }
-                        break;
-                    #endregion
-                    #region FIN-пакеты: окончание передачи, закрытие соединения
-                    case 'F':
-                        {
-
-                        }
-                        break;
-                    #endregion
-                    #region YES-пакеты: положительный ответ на запрос о передаче файла
-                    case 'Y':
-                        {
-                            byte FileForSending = HelpBuffer[1];
-                            #region Параметры для сохранения недокачанных файлов
-                            if (Properties.Settings.Default.NotCompletedFiles != null)
-                                Properties.Settings.Default.NotCompletedFiles.Add("elelel");
-                            else
+                    #region Основная часть
+                    char TypeOfPacket = Convert.ToChar(HelpBuffer[0]);
+                    switch (TypeOfPacket)
+                    {
+                        #region Информационные пакеты
+                        case 'I':
                             {
-                                Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
-                                Properties.Settings.Default.NotCompletedFiles.Add("elelel");
-                                Properties.Settings.Default.Save();
+                                uint ili = ByteToInt(HelpBuffer, 1);
+                                byte[] ret = new byte[HelpBuffer.Length - 10];
+                                for (int hf = 10; hf < HelpBuffer.Length; hf++)
+                                    ret[hf - 10] = HelpBuffer[hf];
+                                Decode(ref ret);
                             }
-                            if (Properties.Settings.Default.NotCompletedFilesIDs != null)
-                                Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
-                            else
+                            break;
+                        #endregion
+                        #region ACK-пакеты: отвечают за подтверждение принятия инфопакет или за запрос на повторную передачу
+                        case 'A':
                             {
-                                Properties.Settings.Default.NotCompletedFilesIDs = new System.Collections.ArrayList();
-                                Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
-                                Properties.Settings.Default.Save();
+
                             }
-                            #endregion
-                        }
-                        break;
+                            break;
+                        #endregion
+                        #region HEAD-пакеты: передают инфо о названии файла
+                        case 'H':
+                            {
+                                RHeader = true;
+                                char[] met = new char[HelpBuffer.Length - 2];
+                                for (int hf = 2; hf < HelpBuffer.Length; hf++)
+                                    met[hf - 2] = Convert.ToChar(HelpBuffer[hf]);
+                                AppliedFileName = new string(met);
+                                GetMessage(true);
+                            }
+                            break;
+                        #endregion
+                        #region FIN-пакеты: окончание передачи, закрытие соединения
+                        case 'F':
+                            {
+
+                            }
+                            break;
+                        #endregion
+                        #region YES-пакеты: положительный ответ на запрос о передаче файла
+                        case 'Y':
+                            {
+                                byte FileForSending = HelpBuffer[1];
+                                #region Параметры для сохранения недокачанных файлов
+                                if (Properties.Settings.Default.NotCompletedFiles != null)
+                                    Properties.Settings.Default.NotCompletedFiles.Add("elelel");
+                                else
+                                {
+                                    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
+                                    Properties.Settings.Default.NotCompletedFiles.Add("elelel");
+                                    Properties.Settings.Default.Save();
+                                }
+                                if (Properties.Settings.Default.NotCompletedFilesIDs != null)
+                                    Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
+                                else
+                                {
+                                    Properties.Settings.Default.NotCompletedFilesIDs = new System.Collections.ArrayList();
+                                    Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
+                                    Properties.Settings.Default.Save();
+                                }
+                                #endregion
+                            }
+                            break;
+                        #endregion
+                        #region NO-пакеты: отрицательный ответ на запрос о передаче файла
+                        case 'N':
+                            {
+                                SHeader = false;
+                                //Удалить всю инфу о файле из буфера и конфига
+                            }
+                            break;
+                        #endregion
+                        default:
+                            break;
+                    }
                     #endregion
-                    #region NO-пакеты: отрицательный ответ на запрос о передаче файла
-                    case 'N':
-                        {
-                            SHeader = false;
-                            //Удалить всю инфу о файле из буфера и конфига
-                        }
-                        break;
-                    #endregion
-                    default:
-                        break;
                 }
-                #endregion
                 #region Прошлая версия
                 //if (InputMessage.Count() > 0)    //Если что-то обнаружено, то выполняем
                             //{
