@@ -85,7 +85,7 @@ namespace Kurs_Project_var25.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("COM1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ComName {
             get {
                 return ((string)(this["ComName"]));
@@ -145,13 +145,35 @@ namespace Kurs_Project_var25.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool TestValue {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool FirstLaunch {
             get {
-                return ((bool)(this["TestValue"]));
+                return ((bool)(this["FirstLaunch"]));
             }
             set {
-                this["TestValue"] = value;
+                this["FirstLaunch"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection NotCompletedFiles {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["NotCompletedFiles"]));
+            }
+            set {
+                this["NotCompletedFiles"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.ArrayList NotCompletedFilesIDs {
+            get {
+                return ((global::System.Collections.ArrayList)(this["NotCompletedFilesIDs"]));
+            }
+            set {
+                this["NotCompletedFilesIDs"] = value;
             }
         }
     }

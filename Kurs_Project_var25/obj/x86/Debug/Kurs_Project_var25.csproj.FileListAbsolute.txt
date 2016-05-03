@@ -1,36 +1,9 @@
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.MainForm.resources
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.Properties.Resources.resources
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csproj.GenerateResource.Cache
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.exe
-C:\Users\Vint\AppData\Local\Temporary Projects\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.exe
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe.config
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csprojResolveAssemblyReference.cache
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.MainForm.resources
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.Properties.Resources.resources
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.SettingsForm.resources
-C:\Users\Vint-95\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csproj.GenerateResource.Cache
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe.config
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.MainForm.resources
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.Properties.Resources.resources
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.SettingsForm.resources
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csproj.GenerateResource.Cache
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.exe
-D:\YandexDisk\Учебные материалы\6 семестр\Сетевые технологии в АСОИУ\Курсач сети\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe.config
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.exe
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csprojResolveAssemblyReference.cache
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.MainForm.resources
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.Properties.Resources.resources
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.SettingsForm.resources
-C:\Users\Vint-95\Documents\Kurs_Project_var25\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csproj.GenerateResource.Cache
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe.config
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.MainForm.resources
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.Properties.Resources.resources
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.SettingsForm.resources
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.csproj.GenerateResource.Cache
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.exe
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\bin\Debug\Kurs_Project_var25.pdb
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.exe
+C:\Users\Vint\Documents\Visual Studio 2010\Projects\Kursach_ST\Kurs_Project_var25\obj\x86\Debug\Kurs_Project_var25.pdb

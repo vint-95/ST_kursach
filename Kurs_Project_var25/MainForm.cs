@@ -16,7 +16,7 @@ namespace Kurs_Project_var25
 {
     public partial class MainForm : Form
     {
-        private bool AutoApplying = false;   //Переменная для автоматического принятия файлов
+        private bool AutoApplying = false;  //Переменная для автоматического принятия файлов
         string SendedFileName;              //Имя отправляемого файла
         string AppliedFileName;             //Имя получаемого файла
         Thread SynchronizationThread;       //Потоки для ежесекундной обработки информации, 
@@ -24,17 +24,19 @@ namespace Kurs_Project_var25
         FileStream SaveFileStream;          //Потоки для сохранения
         FileStream SendFileStream;          //и отправки файлов
         SynchronizationContext UIContext;   //Вещь для синхронизации контролов в форме. Очень нужна для управления контролами из не-родных потоков
-        bool ConnStatus = false;//Текущий статус порта
-        bool RHeader = false;   //Получен заголовок
-        bool SHeader = false;   //Отправлен заголовок
-        bool RData = false;     //Получен файл
-        bool SData = false;     //Отправлен файл
-        byte?[] WriteData;      //Отправляемые данные
-        byte?[] ReadData;       //Получаемые данные
-        long Pointer;           //Указатель на текущий передаваемый пакет
-        bool Accepting = false; //Подтверждение отправки
-        int ErrorCounter = 0;   //Счётчик ошибок
-        bool Restore = false;
+        bool ConnStatus = false;            //Текущий статус порта
+        bool RHeader = false;               //Получен заголовок
+        bool SHeader = false;               //Отправлен заголовок
+        bool RData = false;                 //Получен файл
+        bool SData = false;                 //Отправлен файл
+        byte?[] WriteData;                  //Отправляемые данные
+        byte?[] ReadData;                   //Получаемые данные
+        long Pointer;                       //Указатель на текущий передаваемый пакет
+        bool Accepting = false;             //Подтверждение отправки
+        int ErrorCounter = 0;               //Счётчик ошибок
+        bool Restore = false;               //Восстановление передачи (а надо ли)
+        bool Console = false;               //Консолько. Понты
+        byte IndexOfFile;
 
         public MainForm()
         {
@@ -42,26 +44,51 @@ namespace Kurs_Project_var25
             GetMessageLabel.Visible = false;
             ApplyButton.Visible = false;
             DeclineButton.Visible = false;
-            COMPort.BaudRate = Properties.Settings.Default.BaudRate;
-#region Фича для переключения локальной и реальной версий программы
-#if DEBUG
-            if(Properties.Settings.Default.TestValue==false)
+            if (Properties.Settings.Default.FirstLaunch == true)
             {
-                COMPort.PortName = "COM16";
-                Properties.Settings.Default.TestValue = true;
-                InfoRTB.AppendText("\n"+ COMPort.PortName +"\n");
+                MessageBox.Show("Здравствуйте! Похоже, Вы запускаете программу в первый раз.\n Для начала необходимо выбрать COM-порт, с которым программа будет работать.");
+                while(Properties.Settings.Default.FirstLaunch == true)
+                {
+                    var f = new SettingsForm();
+                    f.ShowDialog();
+                    if (f.flag == true)
+                    {
+                        COMPort.BaudRate = Properties.Settings.Default.BaudRate;
+                        COMPort.PortName = Properties.Settings.Default.ComName;
+                        COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
+                        COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
+                        COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
+                        COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
+                        Properties.Settings.Default.FirstLaunch = false;
+                        Properties.Settings.Default.Save();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Пожалуйста, настройте программу для первого запуска.");
+                    }
+                }
             }
-            else
-            {
-                COMPort.PortName = "COM17";
-                Properties.Settings.Default.TestValue = false;
-                InfoRTB.AppendText("\n" + COMPort.PortName + "\n");
-            }
-            Properties.Settings.Default.Save();
-#else
-            COMPort.PortName = Properties.Settings.Default.ComName;
-#endif
+#region Фича для переключения локальной и реальной версий программы (уже не нужна)
+//#if !DEBUG
+//            if(Properties.Settings.Default.FirstLaunch==false)
+//            {
+//                COMPort.PortName = "COM16";
+//                Properties.Settings.Default.FirstLaunch = true;
+//                InfoRTB.AppendText("\n"+ COMPort.PortName +"\n");
+//            }
+//            else
+//            {
+//                COMPort.PortName = "COM17";
+//                Properties.Settings.Default.FirstLaunch = false;
+//                InfoRTB.AppendText("\n" + COMPort.PortName + "\n");
+//            }
+//            Properties.Settings.Default.Save();
+//#else
+            
+//#endif
 #endregion
+            COMPort.BaudRate = Properties.Settings.Default.BaudRate;
+            COMPort.PortName = Properties.Settings.Default.ComName;
             COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
             COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
             COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
@@ -70,16 +97,15 @@ namespace Kurs_Project_var25
             COMPort.RtsEnable = false;
             COMPort.Handshake = Handshake.None;
             //Restore = Properties.Settings.Default.Restore;
-            //COMPort.BaudRate = Properties.Settings.Default.BaudRate;
-            //COMPort.ReadTimeout = 500;
-            //COMPort.WriteTimeout = 500;
             AutoApplying = Properties.Settings.Default.AutomatedGet;
             UIContext = SynchronizationContext.Current;
             ConnectionThread = new Thread(Connect);
-            SynchronizationThread = new Thread(ReadingThread);
+            //SynchronizationThread = new Thread(ReadingThread);
             COMPort.Open();
             ConnectionThread.Start();
-            SynchronizationThread.Start();
+            //SynchronizationThread.Start();
+            InfoRTB.Visible = false;
+            this.Size = new Size(803, 330);
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -102,6 +128,7 @@ namespace Kurs_Project_var25
         {
             if (Exit() == true)
             {
+                ConnectionThread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -155,6 +182,7 @@ namespace Kurs_Project_var25
         {
             if (Exit() == true)
             {
+                ConnectionThread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -192,33 +220,43 @@ namespace Kurs_Project_var25
 
         private void SendFileButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                //COMPort.WriteLine("Soobchenie s porta " + COMPort.PortName); //Отсылаемое сообщение
-                //COMPort.WriteLine("Put': " + SendPathTextBox.Text);
-                InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
+            //try
+            //{
+                //Заносим в буфер недопереданных файлов (не недокачанных!)
+                if (Properties.Settings.Default.NotCompletedFiles != null)
+                {
+                    IndexOfFile = (byte)Properties.Settings.Default.NotCompletedFiles.Count;
+                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
+                    Properties.Settings.Default.Save();
+                }
+                else
+                {
+                    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
+                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
+                    Properties.Settings.Default.Save();
+                }
 
-                //Ждём-с
-                //while(true)
+                //if (Properties.Settings.Default.ID_File != null)
                 //{
-                    //Thread.Sleep(200);
-                    //if (COMPort.CtsHolding == true)
-                    //{
-                        InfoRTB.AppendText("...Подтверждено");
-
-                        //Отослать первый пакет
-                        byte [] newbyte = new byte [] {};
-                        InfoRTB.AppendText("\nНачата пересылка файла " + SendedFileName);
-                        //COMPort.Write(newbyte,0,1);
-                        //break;
-                    //}
+                //    IndexOfFile = (byte)Properties.Settings.Default.ID_File.Count;
+                //    //IndexOfFile++;
                 //}
-                //InfoRTB.AppendText("...Завершено");
-            }
-            catch
-            {
-                InfoRTB.AppendText("...Ошибка");
-            }
+                //else
+                //{
+                //    Properties.Settings.Default.ID_File = new System.Collections.ArrayList();
+                //    Properties.Settings.Default.ID_File.Add((byte)0);
+                //    //Properties.Settings.Default.ID_File.RemoveAt(0);
+                //    Properties.Settings.Default.Save();
+                //}
+
+                PartPacking(new byte[] {}, 'H', (uint)SendedFileName.Length);
+                InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
+                GetMessage(false);
+            //}
+            //catch
+            //{
+            //    InfoRTB.AppendText("...Ошибка");
+            //}
         }
 
         private void DeclineButton_Click(object sender, EventArgs e)
@@ -226,7 +264,7 @@ namespace Kurs_Project_var25
             GetMessage(false);
 
             //Отправить на другой комп сигнал о том, что принятие файла отклонено
-            SendMessage('N');
+            PartPacking(new byte[] { }, 'N', 0);
         }
 
         /// <summary>
@@ -257,7 +295,7 @@ namespace Kurs_Project_var25
             GetLabel.Text = "Получаемый файл: " + AppliedFileName;
 
             //Отправить сигнал о том, что разрешено отсылать файл
-            SendMessage('Y');
+            //SendMessage('Y');
         }
 
         /// <summary>
@@ -352,7 +390,8 @@ namespace Kurs_Project_var25
 
                 if (c1 || c2 || c3 || c4)
                 {
-                    Console.WriteLine("ERROR! Error byte:" + i);
+                    //Console.WriteLine("ERROR! Error byte:" + i);
+                    MessageBox.Show("ERROR");
                     return;
                 }
                 System.Collections.BitArray _11bitDecodeArr = new System.Collections.BitArray(11);
@@ -379,7 +418,6 @@ namespace Kurs_Project_var25
             decodeBitMsg.CopyTo(msg, 0);
             return;
         }
-
 
         //public void oldConnect()
         //{
@@ -415,31 +453,34 @@ namespace Kurs_Project_var25
                 Thread.Sleep(2000);
                 try
                 {
-                    if ((COMPort.DsrHolding == true) & (RHeader == false) & (SHeader == false))
+                    if (COMPort.IsOpen == true)
                     {
-                        ConnStatus = true;
-                        UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: активно", null);
-                    }
-                    if ((COMPort.DsrHolding == false) & (RHeader == false) & (SHeader == false))
-                    {
-                        ConnStatus = false;
-                        UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: отсутствует", null);
-                    }
-                    if (((RHeader == true) || (SHeader == true)) & (ConnStatus == false))
-                    {
+                        if ((COMPort.DsrHolding == true) & (RHeader == false) & (SHeader == false))
+                        {
+                            ConnStatus = true;
+                            UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: активно", null);
+                        }
+                        if ((COMPort.DsrHolding == false) & (RHeader == false) & (SHeader == false))
+                        {
+                            ConnStatus = false;
+                            UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: отсутствует", null);
+                        }
+                        if (((RHeader == true) || (SHeader == true)) & (ConnStatus == false))
+                        {
 
-                        //Добавить сохранение индекса для восстановления передачи
+                            //Добавить сохранение индекса для восстановления передачи
 
-                        //SendMessage('E');
-                        UIContext.Send(d => InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана."), null);
-                        //RHeader = false;
-                        //RData = false;
-                        //RHeader = false;
-                        //SData = false;
-                        //SaveFileStream.Close();
-                        //SaveFileStream.Dispose();
-                        //SendFileStream.Close();
-                        //SendFileStream.Dispose();
+                            //SendMessage('E');
+                            UIContext.Send(d => InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана."), null);
+                            //RHeader = false;
+                            //RData = false;
+                            //RHeader = false;
+                            //SData = false;
+                            //SaveFileStream.Close();
+                            //SaveFileStream.Dispose();
+                            //SendFileStream.Close();
+                            //SendFileStream.Dispose();
+                        }
                     }
                 }
                 catch (TimeoutException)
@@ -459,20 +500,20 @@ namespace Kurs_Project_var25
             COMPort.Close();
         }
 
-        private void SendMessage(char TypeOfMessage)
-        {
+        //private void SendMessage(char TypeOfMessage)
+        //{
 
-            #region
-            //COMPort.RtsEnable = false;
-            //if (TypeOfMessage == 'I')
-            //    COMPort.Write(PartPacking(WriteData, TypeOfMessage, WriteData.Length), 0, PartPacking(WriteData, TypeOfMessage, WriteData.Length).Length);
-            //else if (TypeOfMessage == 'A') { }
-            //COMPort.Write(PartPacking(ToByteMas(SendedFileName), TypeOfMessage, SendedFileName.Length * 8), 0, ??);
-            //else
-            //    COMPort.Write(PartPacking(null, TypeOfMessage, 0), 0, PartPacking(null, TypeOfMessage, 0).Length);
-            //COMPort.RtsEnable = true;
-            #endregion
-        }
+        //    #region
+        //    //COMPort.RtsEnable = false;
+        //    //if (TypeOfMessage == 'I')
+        //    //    COMPort.Write(PartPacking(WriteData, TypeOfMessage, WriteData.Length), 0, PartPacking(WriteData, TypeOfMessage, WriteData.Length).Length);
+        //    //else if (TypeOfMessage == 'A') { }
+        //    //COMPort.Write(PartPacking(ToByteMas(SendedFileName), TypeOfMessage, SendedFileName.Length * 8), 0, ??);
+        //    //else
+        //    //    COMPort.Write(PartPacking(null, TypeOfMessage, 0), 0, PartPacking(null, TypeOfMessage, 0).Length);
+        //    //COMPort.RtsEnable = true;
+        //    #endregion
+        //}
 
         private void IntToByte(uint Number, ref int index, byte [] VByte)
         {
@@ -508,6 +549,7 @@ namespace Kurs_Project_var25
             uint ID_Package = 546679653;    //Идентификатор для пакета
             switch(Type)
             {
+                #region
                 case 'I':
                 VByte = new byte[Length + 12];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -538,7 +580,8 @@ namespace Kurs_Project_var25
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
-
+                #endregion
+                #region
                 case 'A':
                 VByte = new byte[8];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -551,13 +594,28 @@ namespace Kurs_Project_var25
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
-
+                #endregion
+                #region
                 case 'H':
-                    string lol = "djfgoprdeg";
-
-                    byte[] mas;
+                VByte = new byte[Length + 4];
+                //string lol = "djfgoprdeg sefsefg 32453htgfrdr4 -5t4-eyh-rkt43"; //Проверка занесения имени файла
+                char[] FName = SendedFileName.ToCharArray();
+                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
+                index++;
+                VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                index++;
+                VByte[index] = ID_File;
+                index++;
+                foreach (char ch in FName)
+                {
+                    VByte[index] = Convert.ToByte(ch);
+                    index++;
+                }
+                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
+                COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
-
+                #endregion
+                #region
                 case 'F':
                 VByte = new byte[5];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -572,7 +630,8 @@ namespace Kurs_Project_var25
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
-
+                #endregion
+                #region
                 case 'Y':
                 VByte = new byte[4];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -584,7 +643,8 @@ namespace Kurs_Project_var25
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
-
+                #endregion
+                #region
                 case 'N':
                 VByte = new byte[4];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
@@ -596,7 +656,7 @@ namespace Kurs_Project_var25
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
                     break;
-
+                #endregion
                 default:
                     break;
             }
@@ -623,19 +683,6 @@ namespace Kurs_Project_var25
         }
 
         /// <summary>
-        /// Перевод строки string в байт-массив. Доказано, что не работает
-        /// </summary>
-        /// <param name="InputString">Строка для перевода</param>
-        /// <returns>Готовый байт-массив</returns>
-        private byte[] ToByteMas(string InputString)
-        {
-            byte[] RetByteMas = new byte[InputString.Count()];
-            //for (int i = 0; i < InputString.Count(); i++)
-            //    RetByteMas[i] = Convert.ToByte(InputString.Substring(i * 8, 8), 2); //Не думаю, что будет работать
-            return RetByteMas;
-        }
-
-        /// <summary>
         /// Функция, отвечающая за чтение и интерпретацию входных данных
         /// Пока не работает, надо разобрать
         /// </summary>
@@ -651,7 +698,7 @@ namespace Kurs_Project_var25
                 //string InputMessage = "";
                 //string TempMessage = "";
                 byte[] InfoBuffer = new byte[25999];
-                PartPacking(InfoBuffer, 'Y', Convert.ToUInt32(InfoBuffer.Length));
+                PartPacking(InfoBuffer, 'H', Convert.ToUInt32(InfoBuffer.Length));
                 //COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
 
                 //for (int i = 0; COMPort.BytesToRead > 0; i++)
@@ -675,7 +722,7 @@ namespace Kurs_Project_var25
                     Array.Resize(ref HelpBuffer, InfoBuffer.Count() - 2);
                     for (int i = 1; i < InfoBuffer.Count()-1; i++)
                         HelpBuffer[i - 1] = InfoBuffer[i];
-                    //Decode(ref HelpBuffer);
+                    Decode(ref HelpBuffer);
                 }
                 #endregion
                 #region Основная часть
@@ -699,7 +746,7 @@ namespace Kurs_Project_var25
                     #region HEAD-пакеты: передают инфо о названии файла
                     case 'H':
                         {
-
+                            RHeader = true;
                         }
                         break;
                     #endregion
@@ -713,14 +760,33 @@ namespace Kurs_Project_var25
                     #region YES-пакеты: положительный ответ на запрос о передаче файла
                     case 'Y':
                         {
-
+                            byte FileForSending = HelpBuffer[1];
+                            #region Параметры для сохранения недокачанных файлов
+                            if (Properties.Settings.Default.NotCompletedFiles != null)
+                                Properties.Settings.Default.NotCompletedFiles.Add("elelel");
+                            else
+                            {
+                                Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
+                                Properties.Settings.Default.NotCompletedFiles.Add("elelel");
+                                Properties.Settings.Default.Save();
+                            }
+                            if (Properties.Settings.Default.NotCompletedFilesIDs != null)
+                                Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
+                            else
+                            {
+                                Properties.Settings.Default.NotCompletedFilesIDs = new System.Collections.ArrayList();
+                                Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
+                                Properties.Settings.Default.Save();
+                            }
+                            #endregion
                         }
                         break;
                     #endregion
                     #region NO-пакеты: отрицательный ответ на запрос о передаче файла
                     case 'N':
                         {
-
+                            SHeader = false;
+                            //Удалить всю инфу о файле из буфера и конфига
                         }
                         break;
                     #endregion
@@ -1030,6 +1096,24 @@ namespace Kurs_Project_var25
                             //    }
                 //}
                 #endregion
+            }
+        }
+
+        private void ConsoleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Console == true)
+            {
+                Console = false;
+                InfoRTB.Visible = false;
+                this.Size= new Size(803,330);
+                ConsoleToolStripMenuItem.Checked = false;
+            }
+            else
+            {
+                Console = true;
+                InfoRTB.Visible = true;
+                this.Size = new Size(803, 558);
+                ConsoleToolStripMenuItem.Checked = true;
             }
         }
     }

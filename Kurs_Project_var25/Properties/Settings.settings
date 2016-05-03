@@ -18,7 +18,7 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="ComName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">COM1</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Restore" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -32,8 +32,14 @@
     <Setting Name="WriteTimeout" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
-    <Setting Name="TestValue" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+    <Setting Name="FirstLaunch" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="NotCompletedFiles" GenerateDefaultValueInCode="false" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="NotCompletedFilesIDs" GenerateDefaultValueInCode="false" Type="System.Collections.ArrayList" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

@@ -19,7 +19,7 @@ namespace Kurs_Project_var25
             BaudRateComboBox.SelectedIndex = Properties.Settings.Default.BaudRateIndex;
             foreach (string s in SerialPort.GetPortNames())
                 ComPortComboBox.Items.Add(s);
-            ComPortComboBox.SelectedIndex = 0;
+            ComPortComboBox.SelectedIndex = Properties.Settings.Default.ComNameIndex;
             InBufferNumericUpDown.Value = Properties.Settings.Default.InBuffer;
             OutBufferNumericUpDown.Value = Properties.Settings.Default.OutBuffer;
             ReadNumericUpDown.Value = Properties.Settings.Default.ReadTimeout;
