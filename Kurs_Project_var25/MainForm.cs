@@ -115,7 +115,69 @@ namespace Kurs_Project_var25
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
+            
+        }
 
+        //private void button1_Click(object sender, EventArgs e)
+        //{
+        //    OpenFileDialog openFileDialog1 = new OpenFileDialog();
+        //    openFileDialog1.Title = "Выбрать фаил";
+        //    openFileDialog1.FileName = "";
+        //    openFileDialog1.ShowDialog();
+
+        //    if (openFileDialog1.FileName != "")
+        //    {
+        //        byte[] byFileData = ReadLocalFile(openFileDialog1.FileName);
+        //        StringBuilder sbOutput = new StringBuilder();
+
+        //        sbOutput.Append(" { ");//начало
+
+        //        for (int iLoop = 0; iLoop < byFileData.Length; iLoop++)
+        //        {
+        //            if (iLoop > 0) sbOutput.Append(", ");//разделитель
+        //            string BinaryCode = Convert.ToString(byFileData[iLoop], 2);
+        //            /*while (BinaryCode.Length != 8)
+        //            {
+        //                if (BinaryCode.Length == 8)
+        //                {
+        //                    sbOutput.Append(BinaryCode.ToString());
+        //                }
+        //                else
+        //                {
+        //                    for (int j = BinaryCode.Length; j < 8; j++) {
+        //                        BinaryCode.Insert(0, null);
+        //                    }
+        //                }
+        //            }*/
+        //            sbOutput.Append(BinaryCode.ToString());
+        //        }
+
+        //        sbOutput.Append(" };");//конец
+        //        //textBox1.Text = sbOutput.ToString();
+
+        //        File.WriteAllText(@"c:\file.txt", sbOutput.ToString(), Encoding.Default);
+
+        //        //Clipboard.SetDataObject(textBox1.Text, true);
+        //    }
+
+        //}
+
+        public byte[] ReadLocalFile(string sLocalFile)
+        {
+            try
+            {
+                using (FileStream oFS = new FileStream(sLocalFile, FileMode.Open, FileAccess.Read))
+                {
+                    using (BinaryReader oBR = new BinaryReader(oFS))
+                    {
+                        return oBR.ReadBytes((int)oFS.Length);
+                    }
+                }
+            }
+            catch
+            {
+                return new byte[] { 0 };
+            }
         }
 
 
@@ -174,6 +236,8 @@ namespace Kurs_Project_var25
             ChoosePath(false);
         }
 
+        byte[] byFileData = new byte[] { };
+
         /// <summary>
         /// Выбор файла для пересылки/Выбор имени файла и диретории для сохранения
         /// </summary>
@@ -185,17 +249,28 @@ namespace Kurs_Project_var25
             {
                 if (SendOpenFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)   //Костыль для того, чтобы при нажатии "Отмена" путь к папке не "исчезал"
                 {
+                    
+                    if (SendOpenFileDialog.FileName != "")
+                    {
+                        Array.Resize(ref byFileData, byFileData.Length);
+                        byFileData = ReadLocalFile(SendOpenFileDialog.FileName);
+                    }
                     SendPathTextBox.Text = SendOpenFileDialog.FileName;
                     SendedFileName = SendOpenFileDialog.SafeFileName;
+                    
                     return true;
                 }
                 return false;
             }
             if (AutoApplying == false && flag == true)
             {
+                AcceptedSaveFileDialog.FileName = AppliedFileName;
                 if (AcceptedSaveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     AppliedFileName = AcceptedSaveFileDialog.FileName;
+                    SaveFileStream = File.Create(AcceptedSaveFileDialog.FileName);
+                    
+
                     return true;
                 }
                 return false;
@@ -549,8 +624,8 @@ namespace Kurs_Project_var25
                 index++;
                 IntToByte(IndexOfInfopacket, ref index, VByte);
                 //uint tr = ByteToInt(VByte,7);
-                Code(ref InfByte);
-                for (int j = 0; index < Length + 3; index++, j++) //Запись в массив инфочасти
+                //Code(ref InfByte);
+                for (int j = 0; j < Length; index++, j++) //Запись в массив инфочасти
                     VByte[index] = InfByte[j];
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                 COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
@@ -734,8 +809,12 @@ namespace Kurs_Project_var25
                                 byte[] ret = new byte[HelpBuffer.Length - 10];
                                 for (int hf = 10; hf < HelpBuffer.Length; hf++)
                                     ret[hf - 10] = HelpBuffer[hf];
-                                Decode(ref ret);
-                                PartPacking(new byte[] { }, 'A', 0);
+                                //Decode(ref ret);
+                                UTF8Encoding temp = new UTF8Encoding(true);
+                                //File.ReadAllBytes
+                                SaveFileStream.Write(ret, 0, ret.Length);
+                                SaveFileStream.Close();
+                                //PartPacking(new byte[] { }, 'A', 0);
                             }
                             break;
                         #endregion
@@ -793,7 +872,7 @@ namespace Kurs_Project_var25
                                 //#endregion
 
 
-
+                                PartPacking(byFileData, 'I', (uint)byFileData.Length);
                                 //MessageBox.Show("YES-пакет");
                             }
                             break;
