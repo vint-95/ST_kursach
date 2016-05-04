@@ -29,8 +29,8 @@ namespace Kurs_Project_var25
         bool SHeader = false;               //Отправлен заголовок
         bool RData = false;                 //Получен файл
         bool SData = false;                 //Отправлен файл
-        byte?[] WriteData;                  //Отправляемые данные
-        byte?[] ReadData;                   //Получаемые данные
+        byte[] WriteData;                   //Отправляемые данные
+        byte[] ReadData;                    //Получаемые данные
         long Pointer;                       //Указатель на текущий передаваемый пакет
         bool Accepting = false;             //Подтверждение отправки
         int ErrorCounter = 0;               //Счётчик ошибок
@@ -40,6 +40,7 @@ namespace Kurs_Project_var25
         uint IndexOfInfopacket = 0;         //Идентификатор для пакета
         byte FinalizationStatus=1;
         static bool ErrorInfo = false;
+        uint Frequency = 100;
 
         public MainForm()
         {
@@ -56,6 +57,7 @@ namespace Kurs_Project_var25
                     f.ShowDialog();
                     if (f.flag == true)
                     {
+                        Frequency = Properties.Settings.Default.Frequency;
                         COMPort.BaudRate = Properties.Settings.Default.BaudRate;
                         COMPort.PortName = Properties.Settings.Default.ComName;
                         COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
@@ -96,6 +98,7 @@ namespace Kurs_Project_var25
             COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
             COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
             COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
+            Frequency = Properties.Settings.Default.Frequency;
             COMPort.DtrEnable = true;
             COMPort.RtsEnable = false;
             COMPort.Handshake = Handshake.None;
@@ -175,6 +178,7 @@ namespace Kurs_Project_var25
         /// Выбор файла для пересылки/Выбор имени файла и диретории для сохранения
         /// </summary>
         /// <param name="flag">true - сохранение, false - пересылка</param>
+        /// <returns>Выполнилась функция или нет</returns>
         private bool ChoosePath(bool flag)
         {
             if (flag == false)
@@ -191,7 +195,6 @@ namespace Kurs_Project_var25
             {
                 if (AcceptedSaveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                //    SendPathTextBox.Text = AcceptedSaveFileDialog.FileName;
                     AppliedFileName = AcceptedSaveFileDialog.FileName;
                     return true;
                 }
@@ -674,7 +677,7 @@ namespace Kurs_Project_var25
         {
             while (true)
             {
-                Thread.Sleep(10);
+                Thread.Sleep((int)Frequency);
                 //Будет работать, если порт открыт и готов к приёму
                 //while (ConnStatus == true && COMPort.CtsHolding == true)
                 //{

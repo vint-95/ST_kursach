@@ -24,6 +24,7 @@ namespace Kurs_Project_var25
             OutBufferNumericUpDown.Value = Properties.Settings.Default.OutBuffer;
             ReadNumericUpDown.Value = Properties.Settings.Default.ReadTimeout;
             WriteNumericUpDown.Value = Properties.Settings.Default.WriteTimeout;
+            FrequencyNUD.Value = Properties.Settings.Default.Frequency;
             if (Properties.Settings.Default.SequentialMode == false)
             {
                 ParallelRB.Checked = true;
@@ -50,6 +51,7 @@ namespace Kurs_Project_var25
             Properties.Settings.Default.OutBuffer = (int)OutBufferNumericUpDown.Value;
             Properties.Settings.Default.ReadTimeout = (int)ReadNumericUpDown.Value;
             Properties.Settings.Default.WriteTimeout = (int)WriteNumericUpDown.Value;
+            Properties.Settings.Default.Frequency = (uint)FrequencyNUD.Value;
             if (ParallelRB.Checked == true)
                 Properties.Settings.Default.SequentialMode = false;
             else
