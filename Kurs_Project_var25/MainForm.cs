@@ -29,7 +29,7 @@ namespace Kurs_Project_var25
         bool SHeader = false;               //Отправлен заголовок
         bool RData = false;                 //Получен файл
         bool SData = false;                 //Отправлен файл
-        byte[] WriteData;                   //Отправляемые данные
+        byte[][] WriteData;                 //Отправляемые данные
         byte[] ReadData;                    //Получаемые данные
         long Pointer;                       //Указатель на текущий передаваемый пакет
         bool Accepting = false;             //Подтверждение отправки
@@ -41,6 +41,7 @@ namespace Kurs_Project_var25
         byte FinalizationStatus=1;
         static bool ErrorInfo = false;
         uint Frequency = 100;
+        Encoding ANSI = Encoding.Default;
 
         public MainForm()
         {
@@ -118,50 +119,6 @@ namespace Kurs_Project_var25
             
         }
 
-        //private void button1_Click(object sender, EventArgs e)
-        //{
-        //    OpenFileDialog openFileDialog1 = new OpenFileDialog();
-        //    openFileDialog1.Title = "Выбрать фаил";
-        //    openFileDialog1.FileName = "";
-        //    openFileDialog1.ShowDialog();
-
-        //    if (openFileDialog1.FileName != "")
-        //    {
-        //        byte[] byFileData = ReadLocalFile(openFileDialog1.FileName);
-        //        StringBuilder sbOutput = new StringBuilder();
-
-        //        sbOutput.Append(" { ");//начало
-
-        //        for (int iLoop = 0; iLoop < byFileData.Length; iLoop++)
-        //        {
-        //            if (iLoop > 0) sbOutput.Append(", ");//разделитель
-        //            string BinaryCode = Convert.ToString(byFileData[iLoop], 2);
-        //            /*while (BinaryCode.Length != 8)
-        //            {
-        //                if (BinaryCode.Length == 8)
-        //                {
-        //                    sbOutput.Append(BinaryCode.ToString());
-        //                }
-        //                else
-        //                {
-        //                    for (int j = BinaryCode.Length; j < 8; j++) {
-        //                        BinaryCode.Insert(0, null);
-        //                    }
-        //                }
-        //            }*/
-        //            sbOutput.Append(BinaryCode.ToString());
-        //        }
-
-        //        sbOutput.Append(" };");//конец
-        //        //textBox1.Text = sbOutput.ToString();
-
-        //        File.WriteAllText(@"c:\file.txt", sbOutput.ToString(), Encoding.Default);
-
-        //        //Clipboard.SetDataObject(textBox1.Text, true);
-        //    }
-
-        //}
-
         public byte[] ReadLocalFile(string sLocalFile)
         {
             try
@@ -181,7 +138,7 @@ namespace Kurs_Project_var25
         }
 
 
-        #region Всё, что вряд ли будет меняться
+
         private void ConsoleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Console == true)
@@ -268,9 +225,7 @@ namespace Kurs_Project_var25
                 if (AcceptedSaveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     AppliedFileName = AcceptedSaveFileDialog.FileName;
-                    SaveFileStream = File.Create(AcceptedSaveFileDialog.FileName);
-                    
-
+                    //SaveFileStream = File.Create(AcceptedSaveFileDialog.FileName);
                     return true;
                 }
                 return false;
@@ -423,7 +378,6 @@ namespace Kurs_Project_var25
             decodeBitMsg.CopyTo(msg, 0);
             return;
         }
-        #endregion
 
         private void SendFileButton_Click(object sender, EventArgs e)
         {
@@ -656,9 +610,11 @@ namespace Kurs_Project_var25
                 index++;
                 VByte[index] = IndexOfFile;
                 index++;
-                foreach (char ch in FName)
+                
+                byte[] lol = ANSI.GetBytes(FName);
+                foreach (byte ch in lol)
                 {
-                    VByte[index] = Convert.ToByte(ch);
+                    VByte[index] = ch;
                     index++;
                 }
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
@@ -722,25 +678,6 @@ namespace Kurs_Project_var25
                 default:
                     break;
             }
-            #region /b/
-            //if (InfByte != null)
-            //{
-            //    VByte = new byte[Length + 4];
-            //    VByte[0] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);           //Старт-байт
-            //    VByte[1] = Convert.ToByte(Type);
-            //    VByte[2] = Convert.ToByte(Length);
-            //    for (int i = 3, j = 0; i < Length + 3; i++, j++)
-            //        VByte[i] = (byte)InfByte[j];
-            //    VByte[Length + 3] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-            //}
-            //else
-            //{
-            //    VByte = new byte[3];
-            //    VByte[0] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Старт-байт
-            //    VByte[1] = Convert.ToByte(Type);
-            //    VByte[2] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-            //}
-            #endregion
             return VByte;
         }
 
@@ -762,15 +699,16 @@ namespace Kurs_Project_var25
                 //PartPacking(InfoBuffer, 'H', Convert.ToUInt32(InfoBuffer.Length));
                 byte[] InfoBuffer = new byte[]{};
                 Array.Resize(ref InfoBuffer, COMPort.BytesToRead);
-                string g = COMPort.ReadExisting();
+                COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
+                //string g = COMPort.ReadExisting();
 
-                char[] m = g.ToArray();
-                int d = 0;
-                foreach (char n in m)
-                {
-                    InfoBuffer[d] = Convert.ToByte(n);
-                    d++;
-                }
+                //char[] m = g.ToArray();
+                //int d = 0;
+                //foreach (char n in m)
+                //{
+                    //InfoBuffer[d] = Convert.ToByte(n);
+                    //d++;
+                //}
 
                 //for (int i = 0; COMPort.BytesToRead > 0; i++)
                 //{
@@ -810,10 +748,13 @@ namespace Kurs_Project_var25
                                 for (int hf = 10; hf < HelpBuffer.Length; hf++)
                                     ret[hf - 10] = HelpBuffer[hf];
                                 //Decode(ref ret);
-                                UTF8Encoding temp = new UTF8Encoding(true);
-                                //File.ReadAllBytes
-                                SaveFileStream.Write(ret, 0, ret.Length);
-                                SaveFileStream.Close();
+                                //Encoding ANSI = Encoding.Default;
+                                char[] dof = ANSI.GetChars(ret);
+                                string df = new string(dof);
+                                File.AppendAllText(AppliedFileName, df, ANSI);
+                                //File.WriteAllText(AppliedFileName, df, temp);
+                                //SaveFileStream.Write(ret, 0, ret.Length);
+                                //SaveFileStream.Close();
                                 //PartPacking(new byte[] { }, 'A', 0);
                             }
                             break;
@@ -834,7 +775,7 @@ namespace Kurs_Project_var25
                                 char[] met = new char[HelpBuffer.Length - 2];
                                 for (int hf = 2; hf < HelpBuffer.Length; hf++)
                                     met[hf - 2] = Convert.ToChar(HelpBuffer[hf]);
-                                AppliedFileName = new string(met);
+                                AppliedFileName = new string(ANSI.GetChars(HelpBuffer, 2, HelpBuffer.Length - 2));
                                 GetMessage(true);
                                 if (Properties.Settings.Default.SequentialMode == true)
                                 SequentialHide(true);
@@ -890,308 +831,6 @@ namespace Kurs_Project_var25
                     }
                     #endregion
                 }
-                #region Прошлая версия
-                //if (InputMessage.Count() > 0)    //Если что-то обнаружено, то выполняем
-                            //{
-                            //    #region Ошибка
-                            //    if (!true) //Вместо !true указать функцию проверки ошибок - иначе проверки не будет
-                            //    //Здесь обрабатывается событие, при котором наступает большое количество ошибок
-                            //    {
-                            //        ErrorCounter++;
-                            //        if (ErrorCounter >= 5)
-                            //        {
-                            //            InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана.");
-                            //            RHeader = false;
-                            //            RData = false;
-                            //            RHeader = false;
-                            //            SData = false;
-                            //            //SendFileStream.Close();
-                            //            //SendFileStream.Dispose();
-                            //        }
-                            //        SendMessage('E');
-                            //    }
-                            //    #endregion
-                            //    else //Тут происходит основное действие
-                            //    {
-                            //        byte[] DekMes = ToByteMas(InputMessage);
-                            //        #region Обработка ACK
-                            //        if (DekMes[1] == Convert.ToByte('A'))
-                            //        {
-                            //            ErrorCounter = 0;
-                            //            COMPort.RtsEnable = false;
-                            //            #region Всё передано
-                            //            if ((SHeader == true) & (SData == true) & (Accepting == false))
-                            //            {
-                            //                #region Сброс флагов
-                            //                RHeader = false;
-                            //                RData = false;
-                            //                SHeader = false;
-                            //                SData = false;
-                            //                #endregion
-                            //                #region Оповещение и закрытие файлового потока
-                            //                InfoRTB.AppendText("\nФайл передан!");
-                            //                SaveFileStream.Close();
-                            //                SaveFileStream.Dispose();
-                            //                #endregion
-                            //            }
-                            //            #endregion
-                            //            #region Заголовок передан, подтверждение есть, данные не переданы
-                            //            if ((SHeader == true) & (SData == false) & (Accepting == true))
-                            //            {
-                            //                //UIContext.Send(d => progressBar1.Value++, null); //Прогрессбар - заполнение
-                            //                Pointer = SaveFileStream.Position;
-                            //                long k = SaveFileStream.Length - Pointer;
-                            //                if (k > 0)
-                            //                {
-                            //                    byte[] InformationMas;
-                            //                    //if (k > 50)
-                            //                    //{
-                            //                    //    InformationMas = new byte[50];
-                            //                    //    for (int i = 0; i < 50; i++)
-                            //                    //        InformationMas[i] = Convert.ToByte(SaveFileStream.ReadByte());
-                            //                    //}
-                            //                    //else
-                            //                    //{
-                            //                    InformationMas = new byte[k];
-                            //                    for (int i = 0; i < k; i++)
-                            //                        InformationMas[i] = Convert.ToByte(SaveFileStream.ReadByte());
-                            //                    //}
-                            //                    byte[] telegram = null; //Кодирование и помещение в пакеты - обязательно
-                            //                    //= Kodir(Upakovat(InformationMas, 'I', InformationMas.Count()), 4, "1011");
-                            //                    #region Запрос на передачу выключен, флаг установки приёма в true
-                            //                    COMPort.RtsEnable = false;
-                            //                    Accepting = true;
-                            //                    #endregion
-                            //                    COMPort.Write(telegram, 0, telegram.Count());
-                            //                    Thread.Sleep(100);
-                            //                    COMPort.RtsEnable = true;
-                            //                }
-                            //                #region Отправка сообщения о конце передачи
-                            //                else
-                            //                {
-                            //                    SData = true;
-                            //                    Accepting = false;
-                            //                    SendMessage('E');
-                            //                }
-                            //                #endregion
-                            //            }
-                            //            #endregion
-                            //            #region Заголовок передан, подтверждения нет
-                            //            if ((SHeader == false) & (Accepting == true))
-                            //                SHeader = true;
-                            //            #endregion
-                            //        #endregion
-                            //            #region Обработка RESET
-                            //            if (DekMes[1] == Convert.ToByte('R'))
-                            //            {
-                            //                ErrorCounter++;
-                            //                #region Если очень много ошибок
-                            //                if (ErrorCounter >= 5)
-                            //                {
-                            //                    InfoRTB.AppendText("\nВо время передачи возникла ошибка!\nПередача прервана!");
-                            //                    RHeader = false;
-                            //                    RData = false;
-                            //                    SHeader = false;
-                            //                    SData = false;
-                            //                    ErrorCounter = 0;
-                            //                    SaveFileStream.Close();
-                            //                    SaveFileStream.Dispose();
-                            //                }
-                            //                #endregion
-                            //                #region Хз, потом разберусь
-                            //                else
-                            //                {
-                            //                    if (SHeader == true)
-                            //                    {
-                            //                        byte[] inf;
-                            //                        long k = SaveFileStream.Length - Pointer;
-                            //                        SaveFileStream.Position = Pointer;
-                            //                        //if (k > 50)
-                            //                        //{
-                            //                        //    inf = new byte[50];
-                            //                        //    for (int i = 0; i < 50; i++)
-                            //                        //        inf[i] = Convert.ToByte(SaveFileStream.ReadByte());
-                            //                        //}
-                            //                        //else
-                            //                        //{
-                            //                        try
-                            //                        {
-                            //                            inf = new byte[k];
-                            //                            for (int i = 0; i < k; i++)
-                            //                                inf[i] = Convert.ToByte(SaveFileStream.ReadByte());
-                            //                            //}
-                            //                            byte[] telegram; //Кодирование информации Хэммингом
-                            //                            //= Kodir(Upakovat(inf, 'I', inf.Count()), 4, "1011");
-                            //                            COMPort.RtsEnable = false;
-                            //                            Accepting = true;
-                            //                            COMPort.Write(InfoBuffer, 0, InfoBuffer.Count());
-                            //                            Thread.Sleep(100);
-                            //                            COMPort.RtsEnable = true;
-                            //                        }
-                            //                        catch
-                            //                        {
-                            //                            InfoRTB.AppendText("\nERROR");
-                            //                        }
-                            //                    }
-                            //                    #region Отправка имени файла
-                            //                    else
-                            //                    {
-                            //                        string FileName = SendedFileName;
-                            //                        byte[] Zagolovok = new byte[FileName.Count()];
-                            //                        for (int i = 0; i < FileName.Count(); i++)
-                            //                        {
-                            //                            Zagolovok[i] = Convert.ToByte(FileName[i]);
-                            //                        }
-                            //                        byte[] telegram; //Кодирование и помещение в пакеты - обязательно
-                            //                        //= Kodir(Upakovat(Zagolovok, 'I', Zagolovok.Count()), 4, "1011");
-                            //                        COMPort.RtsEnable = false;
-                            //                        Accepting = true;
-                            //                        COMPort.Write(InfoBuffer, 0, InfoBuffer.Count());
-                            //                        Thread.Sleep(100);
-                            //                        COMPort.RtsEnable = true;
-                            //                    }
-                            //                    #endregion
-                            //                }
-                            //                #endregion
-                            //            }
-                            //            #endregion
-                            //            #region Обработка ответа ДА
-                            //            if (DekMes[1] == Convert.ToByte('Y'))
-                            //            {
-                            //                //UIContext.Send(d => button1.IsEnabled = false, null);
-                            //                //UIContext.Send(d => MenuItem_Action.IsEnabled = false, null);
-                            //                UIContext.Send(d => InfoRTB.AppendText("YES"), null);
-                            //                //byte[] inf;
-                            //                //Pointer = SaveFileStream.Position;
-                            //                //long k = SaveFileStream.Length - Pointer;
-                            //                //if (k > 50)
-                            //                //{
-                            //                //    inf = new byte[50];
-                            //                //    for (int i = 0; i < 50; i++)
-                            //                //    {
-                            //                //        inf[i] = Convert.ToByte(SaveFileStream.ReadByte());
-                            //                //    }
-                            //                //}
-                            //                //else
-                            //                //{
-                            //                //    inf = new byte[k];
-                            //                //    for (int i = 0; i < k; i++)
-                            //                //    {
-                            //                //        inf[i] = Convert.ToByte(SaveFileStream.ReadByte());
-                            //                //    }
-                            //                //}
-                            //                //Accepting = false;
-                            //                //byte[] telegram = null; //Кодирование и помещение в пакеты - обязательно
-                            //                //// = Kodir(Upakovat(inf, 'I', inf.Count()), 4, "1011");
-                            //                //COMPort.RtsEnable = false;
-                            //                //Accepting = true;
-                            //                //COMPort.Write(telegram, 0, telegram.Count());
-                            //                //Thread.Sleep(100);
-                            //                //COMPort.RtsEnable = true;
-                            //            }
-                            //            #endregion
-                            //            #region Обработка ответа НЕТ
-                            //            if (DekMes[1] == Convert.ToByte('N'))
-                            //            {
-                            //                InfoRTB.AppendText("\nПринимающая сторона отказывается принимать файл!");
-                            //                SaveFileStream.Close();
-                            //                SaveFileStream.Dispose();
-                            //                RHeader = false;
-                            //                RData = false;
-                            //                SHeader = false;
-                            //                SData = false;
-                            //            }
-                            //            #endregion
-                            //            #region Обработка конца передачи
-                            //            if (DekMes[1] == Convert.ToByte('E'))
-                            //            {
-                            //                RData = true;
-                            //                //UIContext.Send(d => label4.Visibility = Visibility.Hidden, null);
-                            //                //UIContext.Send(d => MenuItem_Action.IsEnabled = true, null);
-                            //                //UIContext.Send(d => button1.IsEnabled = true, null);
-                            //                InfoRTB.AppendText("\nФайл принят!");
-                            //                //ACK();
-                            //                RHeader = false;
-                            //                RData = false;
-                            //                SHeader = false;
-                            //                SData = false;
-                            //                //SendFileStream.Close();
-                            //                //SendFileStream.Dispose();
-                            //            }
-                            //            #endregion
-                            //            #region Обработка информационной части
-                            //            if (DekMes[1] == Convert.ToByte('I'))
-                            //            {
-                            //                if (DekMes.Count() == DekMes[2] + 4)
-                            //                {
-                            //                    #region В случае, если заголовка не было
-                            //                    if (RHeader == false)
-                            //                    {
-                            //                        for (int i = 0; i < Convert.ToInt32(DekMes[2]); i++)
-                            //                            //HeaderInfo = HeaderInfo + Convert.ToChar(DekMes[3 + i]);
-                            //                        RHeader = true;
-                            //                        //ACK();
-                            //                        //if (MessageBox.Show("Принять файл " + HeaderInfo + "?", "Согласие на передачу", MessageBoxButtons.YesNo) == MessageBoxButton.Yes)
-                            //                        //{
-                            //                        //    if (Sohranenie(HeaderInfo) == true)
-                            //                        //    {
-                            //                        //        RHeader = true;
-                            //                        //        //UIContext.Send(d => button1.IsEnabled = false, null);
-                            //                        //        //UIContext.Send(d => MenuItem_Action.IsEnabled = false, null);
-                            //                        //        //UIContext.Send(d => label4.Visibility = Visibility.Visible, null);
-                            //                        //        //YES();
-                            //                        //    }
-                            //                        //    else
-                            //                        //    {
-                            //                        //        //NO();
-                            //                        //        RHeader = false;
-                            //                        //        RData = false;
-                            //                        //        SHeader = false;
-                            //                        //        SData = false;
-                            //                        //    }
-                            //                        //}
-                            //                        //else
-                            //                        //{
-                            //                        //    //NO();
-                            //                        //    RHeader = false;
-                            //                        //    RData = false;
-                            //                        //    SHeader = false;
-                            //                        //    SData = false;
-                            //                        //}
-                            //                    }
-                            //                    #endregion
-                            //                    #region В случае, если заголовок был
-                            //                    else
-                            //                    {
-                            //                        //ACK();
-                            //                        //SendFileStream.Write(DekMes, 3, Convert.ToInt32(DekMes[2]));
-                            //                    }
-                            //                    #endregion
-                            //                }
-                            //                #region Ошибка
-                            //                else
-                            //                {
-                            //                    ErrorCounter++;
-                            //                    if (ErrorCounter >= 5)
-                            //                    {
-                            //                        InfoRTB.AppendText("\nВо время передачи возникла ошибка!\nПередача прервана!");
-                            //                        RHeader = false;
-                            //                        RData = false;
-                            //                        SHeader = false;
-                            //                        SData = false;
-                            //                        ErrorCounter = 0;
-                            //                        //SendFileStream.Close();
-                            //                        //SendFileStream.Dispose();
-                            //                    }
-                            //                    //NAK();
-                            //                }
-                            //                #endregion
-                            //            }
-                            //            #endregion
-                            //        }
-                            //    }
-                //}
-                #endregion
             }
         }
     }
