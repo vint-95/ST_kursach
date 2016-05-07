@@ -46,6 +46,7 @@
             this.MainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.ProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ChooseFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ConsoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AutoAcceptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RestoreLostPacketsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ConnSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,7 +58,6 @@
             this.COMPort = new System.IO.Ports.SerialPort(this.components);
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.ConnectionStatusTSSL = new System.Windows.Forms.ToolStripStatusLabel();
-            this.ConsoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SendGroupBox.SuspendLayout();
             this.GetGroupBox.SuspendLayout();
             this.MainMenuStrip.SuspendLayout();
@@ -231,6 +231,14 @@
             this.ChooseFileToolStripMenuItem.Text = "Выбрать файл...";
             this.ChooseFileToolStripMenuItem.Click += new System.EventHandler(this.ChooseFileToolStripMenuItem_Click);
             // 
+            // ConsoleToolStripMenuItem
+            // 
+            this.ConsoleToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.ConsoleToolStripMenuItem.Name = "ConsoleToolStripMenuItem";
+            this.ConsoleToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ConsoleToolStripMenuItem.Text = "Консоль?";
+            this.ConsoleToolStripMenuItem.Click += new System.EventHandler(this.ConsoleToolStripMenuItem_Click);
+            // 
             // AutoAcceptToolStripMenuItem
             // 
             this.AutoAcceptToolStripMenuItem.CheckOnClick = true;
@@ -301,14 +309,6 @@
             this.ConnectionStatusTSSL.Size = new System.Drawing.Size(77, 17);
             this.ConnectionStatusTSSL.Text = "Соединение:";
             // 
-            // ConsoleToolStripMenuItem
-            // 
-            this.ConsoleToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.ConsoleToolStripMenuItem.Name = "ConsoleToolStripMenuItem";
-            this.ConsoleToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
-            this.ConsoleToolStripMenuItem.Text = "Консоль?";
-            this.ConsoleToolStripMenuItem.Click += new System.EventHandler(this.ConsoleToolStripMenuItem_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -325,7 +325,6 @@
             this.Text = "Передача данных через COM-порт";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
-            this.Load += new System.EventHandler(this.MainForm_Load);
             this.SendGroupBox.ResumeLayout(false);
             this.SendGroupBox.PerformLayout();
             this.GetGroupBox.ResumeLayout(false);
