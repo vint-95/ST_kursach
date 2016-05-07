@@ -568,6 +568,28 @@ namespace Kurs_Project_var25
             }
         }
 
+        private void NullVariablesHost()
+        {
+            SendedFileName = null;
+            SHeader = false;
+            SData = false;
+            WriteData = new byte[][] { };
+            IndexOfInfopacket = 0;
+            MaxIndexOfInfopacket = 0;
+            FinalizationStatus = 1;
+            byFileData = new byte[] { };
+            CountPackets = 0;
+        }
+
+        private void NullVariablesClient()
+        {
+            AppliedFileName = null;            
+            RHeader = false;              
+            RData = false;                 
+            ReadData = new byte[]{};                   
+            ErrorCounter = 0;               
+        }
+
         /// <summary>
         /// Функция для упаковки информации любого вида в сообщение
         /// </summary>
@@ -651,10 +673,14 @@ namespace Kurs_Project_var25
                 }
                 else
                 {
+                    VByte[index] = FinalizationStatus;
+                    index++;
+                    VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
+                    COMPort.Write(VByte, 0, VByte.Length);
+                    NullVariablesHost();
                     COMPort.RtsEnable = true;
                     FinalizationStatus = 1;
-                    VByte[index] = 3;
-                    index++;
+                    MessageBox.Show("Передача завершена");
                     break;
                 }
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
@@ -695,7 +721,6 @@ namespace Kurs_Project_var25
 
         /// <summary>
         /// Функция, отвечающая за чтение и интерпретацию входных данных
-        /// Пока не работает, надо разобрать
         /// </summary>
         public void ReadingThread()
         {
@@ -706,34 +731,10 @@ namespace Kurs_Project_var25
                 //while (ConnStatus == true && COMPort.CtsHolding == true)
                 //{
                 #region Чтение данных из потока
-                
-                
-                //PartPacking(InfoBuffer, 'H', Convert.ToUInt32(InfoBuffer.Length));
                 byte[] InfoBuffer = new byte[]{};
                 Array.Resize(ref InfoBuffer, COMPort.BytesToRead);
                 COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
-                //string g = COMPort.ReadExisting();
 
-                //char[] m = g.ToArray();
-                //int d = 0;
-                //foreach (char n in m)
-                //{
-                    //InfoBuffer[d] = Convert.ToByte(n);
-                    //d++;
-                //}
-
-                //for (int i = 0; COMPort.BytesToRead > 0; i++)
-                //{
-                //    //TempMessage = Convert.ToString(COMPort.ReadByte(), 2);  //Перевод в двоичную СС
-                //    ////Если в Temp меньше байта, то оставшееся до восьми заполняем нулями
-                //    //if (TempMessage.Count() < 8)         
-                //    //{
-                //    //    for (int j = 0; TempMessage.Count() < 8; j++)
-                //    //        TempMessage = "0" + TempMessage;
-                //    //}
-                //    //InputMessage += TempMessage; //Конечное принятое сообщение, с которым работаем далее
-                //    //Thread.Sleep(30);
-                //}
                 #endregion
                 if (InfoBuffer.Length!=0)
                 {
@@ -823,7 +824,9 @@ namespace Kurs_Project_var25
                                 }
                                 else
                                 {
+                                    NullVariablesClient();
                                     COMPort.RtsEnable = true;
+                                    MessageBox.Show("Передача завершена");
                                 }
                             }
                             break;
