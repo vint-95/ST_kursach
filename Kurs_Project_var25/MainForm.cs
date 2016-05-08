@@ -129,35 +129,37 @@ namespace Kurs_Project_var25
                     }
                 }
             }
+            //Restoringthread = new Thread(RestoringConnecion);
+            //Restoringthread.Start();
             ConnectionThread.Start();
             SynchronizationThread.Start();
             InfoRTB.Visible = false;
             this.Size = new Size(803, 335);
         }
 
-        private void RestoringConnecion()
-        {
-            OP.AutoReset = true;
-            OP.Interval = Properties.Settings.Default.ReadTimeout;
-            OP.Start();
-            while (true)
-            {
-                Thread.Sleep((int)Properties.Settings.Default.Frequency);
-                OP.Elapsed += OnTimedEvent;
-            }
-        }
+        //private void RestoringConnecion()
+        //{
+        //    OP.AutoReset = true;
+        //    OP.Interval = Properties.Settings.Default.ReadTimeout;
+        //    OP.Start();
+        //    while (true)
+        //    {
+        //        Thread.Sleep((int)Properties.Settings.Default.Frequency);
+        //        OP.Elapsed += OnTimedEvent;
+        //    }
+        //}
 
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            if (RestoringTransfer == false && MaxIndexOfInfopacketIn != IndexOfInfopacketIn)
-            {
-                PartPacking(new byte[] { }, 'A', 0);
-            }
-            else
-            {
-                RestoringTransfer = false;
-            }
-        }
+        //private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        //{
+        //    if (RestoringTransfer == false && MaxIndexOfInfopacketIn != IndexOfInfopacketIn)
+        //    {
+        //        PartPacking(new byte[] { }, 'A', 0);
+        //    }
+        //    else
+        //    {
+        //        RestoringTransfer = false;
+        //    }
+        //}
 
         public byte[] ReadLocalFile(string sLocalFile)
         {
@@ -173,8 +175,7 @@ namespace Kurs_Project_var25
                         MessageBox.Show("Выберите, пожалуйста, файл, размер которого не превышает 2 Гб.","Предупреждение",MessageBoxButtons.OK,MessageBoxIcon.Asterisk);
                         BigFile = true;
                         return new byte[] { 0 };
-                    }
-                        
+                    } 
                 }
             }
         }
@@ -249,6 +250,7 @@ namespace Kurs_Project_var25
                     {
                         Array.Resize(ref byFileData, byFileData.Length);
                         byFileData = ReadLocalFile(SendOpenFileDialog.FileName);
+                        FileDividing();
                     }
                     if (BigFile == true)
                         return false;
@@ -713,7 +715,9 @@ namespace Kurs_Project_var25
                     index++;
                 }
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-                COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
+                COMPort.Write(VByte,0,VByte.Length);                                                   //Запись на порт
+                if (RHeader == true)
+                    PartPacking(new byte[] { }, 'A', 0);
                     break;
                 #endregion
                 #region F
@@ -830,14 +834,23 @@ namespace Kurs_Project_var25
                                 {
                                     uint MAX = ByteToInt(HelpBuffer,10);
                                     IndexOfInfopacketIn++;
-                                    UIContext.Send(d => GetProgressBar.Value = (int)((IndexOfInfopacketIn / (double)MAX)*100),0);
+                                    UIContext.Send(d => GetProgressBar.Value = (int)((IndexOfInfopacketIn / (double)MAX)*100), 0);
                                     char[] dof = ANSI.GetChars(ret);
                                     string df = new string(dof);
                                     File.AppendAllText(AppliedFileName, df, ANSI);
                                 }
                                 else
                                     ErrorInfo = false;
+                                if (RHeader == false)
                                 PartPacking(new byte[] { }, 'A', 0);
+                                else
+                                {
+                                    IndexOfInfopacketOut++;
+                                    if (IndexOfInfopacketOut != CountPackets)
+                                        PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
+                                    else
+                                        PartPacking(new byte[] { }, 'F', 0);
+                                }
                             }
                             break;
                         #endregion
@@ -911,7 +924,7 @@ namespace Kurs_Project_var25
                                 //    Properties.Settings.Default.Save();
                                 //}
                                 #endregion
-                                FileDividing();
+                                //FileDividing();
                                 PartPacking(WriteData[0], 'I', (uint)WriteData[0].Length);
                             }
                             break;
@@ -933,4 +946,3 @@ namespace Kurs_Project_var25
         }
     }
 }
-
