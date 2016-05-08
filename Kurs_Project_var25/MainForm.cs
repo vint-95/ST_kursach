@@ -93,7 +93,36 @@ namespace Kurs_Project_var25
             UIContext = SynchronizationContext.Current;
             ConnectionThread = new Thread(Connect);
             SynchronizationThread = new Thread(ReadingThread);
-            COMPort.Open();
+            while(true)
+            {
+            try
+            {
+                COMPort.Open();
+                break;
+            }
+            catch
+            {
+                MessageBox.Show("К сожалению, не удалось загрузить нужный порт. Необходимо перенастроить программу.");
+                var f = new SettingsForm();
+                f.ShowDialog();
+                if (f.flag == true)
+                {
+                    Frequency = Properties.Settings.Default.Frequency;
+                    COMPort.BaudRate = Properties.Settings.Default.BaudRate;
+                    COMPort.PortName = Properties.Settings.Default.ComName;
+                    COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
+                    COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
+                    COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
+                    COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
+                    Properties.Settings.Default.FirstLaunch = false;
+                    Properties.Settings.Default.Save();
+                }
+                else
+                {
+                    MessageBox.Show("Пожалуйста, перенастройте программу.");
+                }
+            }
+            }
             ConnectionThread.Start();
             SynchronizationThread.Start();
             InfoRTB.Visible = false;
