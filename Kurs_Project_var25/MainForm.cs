@@ -214,7 +214,6 @@ namespace Kurs_Project_var25
             {
                 ConnectionThread.Abort();
                 SynchronizationThread.Abort();
-                Restoringthread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -279,7 +278,6 @@ namespace Kurs_Project_var25
             {
                 ConnectionThread.Abort();
                 SynchronizationThread.Abort();
-                Restoringthread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
