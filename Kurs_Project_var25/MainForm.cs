@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -10,41 +9,48 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Diagnostics;
+using System.Timers;
 
 namespace Kurs_Project_var25
 {
     public partial class MainForm : Form
     {
+        #region Общие глобальные переменные
         private bool AutoApplying = false;  //Переменная для автоматического принятия файлов
-        string SendedFileName;              //Имя отправляемого файла
-        string AppliedFileName;             //Имя получаемого файла
-        Thread SynchronizationThread;       //Потоки для ежесекундной обработки информации, 
-        Thread ConnectionThread;            //касающейся входящих данных и соединения
-        FileStream SaveFileStream;          //Потоки для сохранения
-        FileStream SendFileStream;          //и отправки файлов
-        SynchronizationContext UIContext;   //Вещь для синхронизации контролов в форме. Очень нужна для управления контролами из не-родных потоков
-        bool ConnStatus = false;            //Текущий статус порта
-        bool RHeader = false;               //Получен заголовок
-        bool SHeader = false;               //Отправлен заголовок
-        bool RData = false;                 //Получен файл
-        bool SData = false;                 //Отправлен файл
-        byte[][] WriteData;                 //Отправляемые данные
-        byte[] ReadData;                    //Получаемые данные
-        long Pointer;                       //Указатель на текущий передаваемый пакет
-        bool Accepting = false;             //Подтверждение отправки
-        int ErrorCounter = 0;               //Счётчик ошибок
+        Thread ConnectionThread;            //Поток на отслеживание соединения
+        Encoding ANSI = Encoding.Default;   //С помощью этого задаем кодировку ANSI
+        bool BigFile = false;               //Проверка на величину файла
+        static bool ErrorInfo = false;      //Информация об ошибке
+        uint Frequency = 100;               //Частота чтения входящего потока
+        byte FinalizationStatus = 1;        //Текущий статус окончания передачи
         bool Restore = false;               //Восстановление передачи (а надо ли)
         bool Console = false;               //Вывод в RichTextBox
         byte IndexOfFile;                   //Идентификатор для файла
-        uint IndexOfInfopacket = 0;         //Идентификатор для пакета
-        uint MaxIndexOfInfopacket = 0;      //Количество пакетов
-        byte FinalizationStatus = 1;        //Текущий статус окончания передачи
-        static bool ErrorInfo = false;      //Информация об ошибке
-        uint Frequency = 100;               //Частота чтения входящего потока
-        bool BigFile = false;               //Проверка на величину файла
+        bool ConnStatus = false;            //Текущий статус порта
+        System.Timers.Timer OP = new System.Timers.Timer();
+        #endregion
+
+        #region Переменные, относящиеся к входному потоку (чтение)
+        string AppliedFileName;             //Имя получаемого файла
+        Thread SynchronizationThread;       //Поток на чтение
+        SynchronizationContext UIContext;   //Вещь для синхронизации контролов в форме. Очень нужна для управления контролами из не-родных потоков
+        bool RHeader = false;               //Получен заголовок
+        uint IndexOfInfopacketIn = 0;         //Идентификатор для пакета (получение)
+        uint MaxIndexOfInfopacketIn = 0;      //Количество пакетов (получение)
+        bool RestoringTransfer = false;
+        #endregion
+
+        #region Переменные, относящиеся к выходному потоку (отправка)
+        string SendedFileName;              //Имя отправляемого файла
+        bool SHeader = false;               //Отправлен заголовок
+        byte[][] WriteData;                 //Отправляемые данные
         byte[] byFileData = new byte[] { }; //Файл, заносимый в одномерный массив
-        Encoding ANSI = Encoding.Default;   //С помощью этого задаем кодировку ANSI
-        int CountPackets;                   //Максимальный индекс текущего получаемого файла 
+        uint IndexOfInfopacketOut = 0;      //Идентификатор для пакета (отправка)
+        int CountPackets=0;                 //Максимальный индекс текущего отправляемого файла 
+        Thread Restoringthread;
+
+        #endregion
+
 
         public MainForm()
         {
@@ -87,7 +93,7 @@ namespace Kurs_Project_var25
             COMPort.DtrEnable = true;
             COMPort.RtsEnable = false;
             COMPort.Handshake = Handshake.None;
-            MaxIndexOfInfopacket = (uint)Properties.Settings.Default.OutBuffer;
+            //MaxIndexOfInfopacketOut = (uint)Properties.Settings.Default.OutBuffer;
             //Restore = Properties.Settings.Default.Restore;
             AutoApplying = Properties.Settings.Default.AutomatedGet;
             UIContext = SynchronizationContext.Current;
@@ -95,38 +101,62 @@ namespace Kurs_Project_var25
             SynchronizationThread = new Thread(ReadingThread);
             while(true)
             {
-            try
-            {
-                COMPort.Open();
-                break;
-            }
-            catch
-            {
-                MessageBox.Show("К сожалению, не удалось загрузить нужный порт. Необходимо перенастроить программу.");
-                var f = new SettingsForm();
-                f.ShowDialog();
-                if (f.flag == true)
+                try
                 {
-                    Frequency = Properties.Settings.Default.Frequency;
-                    COMPort.BaudRate = Properties.Settings.Default.BaudRate;
-                    COMPort.PortName = Properties.Settings.Default.ComName;
-                    COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
-                    COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
-                    COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
-                    COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
-                    Properties.Settings.Default.FirstLaunch = false;
-                    Properties.Settings.Default.Save();
+                    COMPort.Open();
+                    break;
                 }
-                else
+                catch
                 {
-                    MessageBox.Show("Пожалуйста, перенастройте программу.");
+                    MessageBox.Show("К сожалению, не удалось загрузить нужный порт. Необходимо перенастроить программу.");
+                    var f = new SettingsForm();
+                    f.ShowDialog();
+                    if (f.flag == true)
+                    {
+                        Frequency = Properties.Settings.Default.Frequency;
+                        COMPort.BaudRate = Properties.Settings.Default.BaudRate;
+                        COMPort.PortName = Properties.Settings.Default.ComName;
+                        COMPort.ReadBufferSize = Properties.Settings.Default.InBuffer;
+                        COMPort.WriteBufferSize = Properties.Settings.Default.OutBuffer;
+                        COMPort.ReadTimeout = Properties.Settings.Default.ReadTimeout;
+                        COMPort.WriteTimeout = Properties.Settings.Default.WriteTimeout;
+                        Properties.Settings.Default.FirstLaunch = false;
+                        Properties.Settings.Default.Save();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Пожалуйста, перенастройте программу.");
+                    }
                 }
-            }
             }
             ConnectionThread.Start();
             SynchronizationThread.Start();
             InfoRTB.Visible = false;
             this.Size = new Size(803, 335);
+        }
+
+        private void RestoringConnecion()
+        {
+            OP.AutoReset = true;
+            OP.Interval = Properties.Settings.Default.ReadTimeout;
+            OP.Start();
+            while (true)
+            {
+                Thread.Sleep((int)Properties.Settings.Default.Frequency);
+                OP.Elapsed += OnTimedEvent;
+            }
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            if (RestoringTransfer == false && MaxIndexOfInfopacketIn != IndexOfInfopacketIn)
+            {
+                PartPacking(new byte[] { }, 'A', 0);
+            }
+            else
+            {
+                RestoringTransfer = false;
+            }
         }
 
         public byte[] ReadLocalFile(string sLocalFile)
@@ -183,6 +213,7 @@ namespace Kurs_Project_var25
             {
                 ConnectionThread.Abort();
                 SynchronizationThread.Abort();
+                Restoringthread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -246,6 +277,7 @@ namespace Kurs_Project_var25
             {
                 ConnectionThread.Abort();
                 SynchronizationThread.Abort();
+                Restoringthread.Abort();
                 this.Dispose();
                 Application.Exit();
             }
@@ -396,18 +428,18 @@ namespace Kurs_Project_var25
             if (SendedFileName != null)
             {
                 //Заносим в буфер недопереданных файлов (не недокачанных!)
-                if (Properties.Settings.Default.NotCompletedFiles != null)
-                {
-                    IndexOfFile = (byte)Properties.Settings.Default.NotCompletedFiles.Count;
-                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
-                    Properties.Settings.Default.Save();
-                }
-                else
-                {
-                    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
-                    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
-                    Properties.Settings.Default.Save();
-                }
+                //if (Properties.Settings.Default.NotCompletedFiles != null)
+                //{
+                //    IndexOfFile = (byte)Properties.Settings.Default.NotCompletedFiles.Count;
+                //    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
+                //    Properties.Settings.Default.Save();
+                //}
+                //else
+                //{
+                //    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
+                //    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
+                //    Properties.Settings.Default.Save();
+                //}
 
                 PartPacking(new byte[] { }, 'H', (uint)SendedFileName.Length);
                 SHeader = true;
@@ -565,7 +597,7 @@ namespace Kurs_Project_var25
 
         private void FileDividing()
         {
-            int op = Properties.Settings.Default.OutBuffer;
+            //int op = Properties.Settings.Default.OutBuffer;
             int i = CheckSize(Properties.Settings.Default.OutBuffer);
             CountPackets = byFileData.Length / i;
             bool lastpack = false;
@@ -582,18 +614,21 @@ namespace Kurs_Project_var25
                 WriteData[0] = byFileData;
                 return;
             }
-            for (int IndexOfMas = 0; IndexOfMas < CountPackets; IndexOfMas++)
+            else
             {
-                if (lastpack == true && IndexOfMas == CountPackets - 1)
+                for (int IndexOfMas = 0; IndexOfMas < CountPackets; IndexOfMas++)
                 {
-                    int lastLength = byFileData.Length - bytesIndex;
-                    Array.Resize(ref WriteData[IndexOfMas], lastLength + 2);
+                    if (lastpack == true && IndexOfMas == CountPackets - 1)
+                    {
+                        int lastLength = byFileData.Length - bytesIndex;
+                        Array.Resize(ref WriteData[IndexOfMas], lastLength + 2);
+                    }
+                    else
+                        Array.Resize(ref WriteData[IndexOfMas], i);
+                    for (int j = 0; j < i && (bytesIndex < byFileData.Length); j++, bytesIndex++)
+                        WriteData[IndexOfMas][j] = byFileData[bytesIndex];
+                    Code(ref WriteData[IndexOfMas]);
                 }
-                else
-                Array.Resize(ref WriteData[IndexOfMas], i);
-                for (int j = 0; j < i && (bytesIndex < byFileData.Length); j++, bytesIndex++)
-                    WriteData[IndexOfMas][j] = byFileData[bytesIndex];
-                Code(ref WriteData[IndexOfMas]);
             }
         }
 
@@ -601,10 +636,9 @@ namespace Kurs_Project_var25
         {
             SendedFileName = null;
             SHeader = false;
-            SData = false;
             WriteData = new byte[][] { };
-            IndexOfInfopacket = 0;
-            MaxIndexOfInfopacket = 0;
+            IndexOfInfopacketOut = 0;
+            //MaxIndexOfInfopacketOut = 0;
             FinalizationStatus = 1;
             byFileData = new byte[] { };
             CountPackets = 0;
@@ -612,11 +646,8 @@ namespace Kurs_Project_var25
 
         private void NullVariablesClient()
         {
-            AppliedFileName = null;            
-            RHeader = false;              
-            RData = false;                 
-            ReadData = new byte[]{};                   
-            ErrorCounter = 0;               
+            AppliedFileName = null;
+            RHeader = false;
         }
 
         /// <summary>
@@ -642,32 +673,31 @@ namespace Kurs_Project_var25
                 IntToByte(Length,ref index,VByte);
                 VByte[index] = IndexOfFile;
                 index++;
-                IntToByte(IndexOfInfopacket, ref index, VByte);
+                IntToByte(IndexOfInfopacketOut, ref index, VByte);
                 IntToByte((uint)CountPackets, ref index, VByte);
-                for (int j = 0; j < Length; index++, j++) //Запись в массив инфочасти
+                for (int j = 0; j < Length; index++, j++)                                               //Запись в массив инфочасти
                     VByte[index] = InfByte[j];
-                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-                COMPort.Write(VByte, 0, VByte.Length);        //Запись на порт
+                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Стоп-байт
+                COMPort.Write(VByte, 0, VByte.Length);                                                  //Запись на порт
                     break;
                 #endregion
                 #region A
                 case 'A':
                 VByte = new byte[8];
-                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
+                VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Старт-байт
                 index++;
-                VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                VByte[index] = Convert.ToByte(Type);                                                   //Тип пакета
                 index++;
                 VByte[index] = IndexOfFile;
                 index++;
-                IntToByte(IndexOfInfopacket, ref index, VByte);
+                IntToByte(IndexOfInfopacketIn, ref index, VByte);
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-                COMPort.Write(VByte,0,VByte.Length);        //Запись на порт
+                COMPort.Write(VByte,0,VByte.Length);                                                   //Запись на порт
                     break;
                 #endregion
                 #region H
                 case 'H':
                 VByte = new byte[Length + 4];
-                //string lol = "djfgoprdeg sefsefg 32453htgfrdr4 -5t4-eyh-rkt43"; //Проверка занесения имени файла
                 char[] FName = SendedFileName.ToCharArray();
                 VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                 index++;
@@ -695,10 +725,18 @@ namespace Kurs_Project_var25
                 index++;
                 VByte[index] = IndexOfFile;
                 index++;
-                if (FinalizationStatus == 1 || FinalizationStatus == 2)
+                if (FinalizationStatus == 1)
                 {
                     VByte[index] = FinalizationStatus;
                     index++;
+                }
+                else if (FinalizationStatus == 2)
+                {
+                    VByte[index] = FinalizationStatus;
+                    index++;
+                    NullVariablesClient();
+                    //VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
+                    //COMPort.Write(VByte, 0, VByte.Length);
                 }
                 else
                 {
@@ -769,13 +807,11 @@ namespace Kurs_Project_var25
                 {
                     #region Декодирование
                     byte[] HelpBuffer = new byte[] { };
-                    if (InfoBuffer.Count() != 0) //InfoBuffer[0] == Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier) &
-                    //Выполнить декодирование
+                    if (InfoBuffer.Count() != 0)
                     {
                         Array.Resize(ref HelpBuffer, InfoBuffer.Count() - 2);
                         for (int i = 1; i < InfoBuffer.Count() - 1; i++)
                             HelpBuffer[i - 1] = InfoBuffer[i];
-                        //Decode(ref HelpBuffer);
                     }
                     #endregion
                     #region Основная часть
@@ -785,7 +821,7 @@ namespace Kurs_Project_var25
                         #region Информационные пакеты
                         case 'I':
                             {
-                                uint ili = ByteToInt(HelpBuffer, 1);
+                                MaxIndexOfInfopacketIn = ByteToInt(HelpBuffer, 1);
                                 byte[] ret = new byte[HelpBuffer.Length - 14];
                                 for (int hf = 14; hf < HelpBuffer.Length; hf++)
                                     ret[hf - 14] = HelpBuffer[hf];
@@ -793,20 +829,14 @@ namespace Kurs_Project_var25
                                 if (ErrorInfo == false)
                                 {
                                     uint MAX = ByteToInt(HelpBuffer,10);
-                                    IndexOfInfopacket++;
-                                    UIContext.Send(d => GetProgressBar.Value = (int)((IndexOfInfopacket / (double)MAX)*100),0);
+                                    IndexOfInfopacketIn++;
+                                    UIContext.Send(d => GetProgressBar.Value = (int)((IndexOfInfopacketIn / (double)MAX)*100),0);
                                     char[] dof = ANSI.GetChars(ret);
                                     string df = new string(dof);
                                     File.AppendAllText(AppliedFileName, df, ANSI);
                                 }
                                 else
-                                {
                                     ErrorInfo = false;
-                                }
-                                //Encoding ANSI = Encoding.Default;
-                                //File.WriteAllText(AppliedFileName, df, temp);
-                                //SaveFileStream.Write(ret, 0, ret.Length);
-                                //SaveFileStream.Close();
                                 PartPacking(new byte[] { }, 'A', 0);
                             }
                             break;
@@ -814,11 +844,10 @@ namespace Kurs_Project_var25
                         #region ACK-пакеты: отвечают за подтверждение принятия инфопакет или за запрос на повторную передачу
                         case 'A':
                             {
-                                IndexOfInfopacket = ByteToInt(HelpBuffer, 2);
-                                
-                                UIContext.Send(d => SendProgressBar.Value = (int)((IndexOfInfopacket / (double)CountPackets)*100), 0);
-                                if(IndexOfInfopacket != CountPackets)
-                                    PartPacking(WriteData[IndexOfInfopacket], 'I', (uint)WriteData[IndexOfInfopacket].Length);
+                                IndexOfInfopacketOut = ByteToInt(HelpBuffer, 2);
+                                UIContext.Send(d => SendProgressBar.Value = (int)((IndexOfInfopacketOut / (double)CountPackets)*100), 0);
+                                if(IndexOfInfopacketOut != CountPackets)
+                                    PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
                                 else
                                     PartPacking(new byte[] { }, 'F', 0);
                             }
@@ -844,7 +873,7 @@ namespace Kurs_Project_var25
                                 if (HelpBuffer[2] == 1)
                                 {
                                     FinalizationStatus = 2;
-                                    PartPacking(new byte[] { },'F',0);
+                                    PartPacking(new byte[] { }, 'F', 0);
                                 }
                                 else if (HelpBuffer[2] == 2)
                                 {
@@ -891,7 +920,7 @@ namespace Kurs_Project_var25
                         case 'N':
                             {
                                 SHeader = false;
-                                //Удалить всю инфу о файле из буфера и конфига
+                                byFileData = new byte[] { };
                             }
                             break;
                         #endregion
