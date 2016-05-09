@@ -506,7 +506,7 @@ namespace Kurs_Project_var25
 
         static int CheckSize(int size)
         {
-            return (int)Math.Floor(Math.Floor(((double)size - 18) * 8.0 / 15.0) * 11.0 / 8.0);
+            return (int)Math.Floor(Math.Floor(((double)size - 17) * 8.0 / 15.0) * 11.0 / 8.0);
         }
 
         private void FileDividing()
@@ -575,19 +575,17 @@ namespace Kurs_Project_var25
         {
             byte[] VByte = new byte[] { };
             int index = 0;
-            byte IndexOfFile = 0;
+            //byte IndexOfFile = 0;
             switch (Type)
             {
                 #region I
                 case 'I':
-                    VByte = new byte[Length + 16];
+                    VByte = new byte[Length + 15];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
                     VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
                     index++;
                     IntToByte(Length, ref index, VByte);
-                    VByte[index] = IndexOfFile;
-                    index++;
                     IntToByte(IndexOfInfopacketOut, ref index, VByte);
                     IntToByte((uint)CountPackets, ref index, VByte);
                     for (int j = 0; j < Length; index++, j++)                                               //Запись в массив инфочасти
@@ -598,12 +596,11 @@ namespace Kurs_Project_var25
                 #endregion
                 #region A
                 case 'A':
-                    VByte = new byte[8];
+                    Thread.Sleep(66);
+                    VByte = new byte[7];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Старт-байт
                     index++;
                     VByte[index] = Convert.ToByte(Type);                                                   //Тип пакета
-                    index++;
-                    VByte[index] = IndexOfFile;
                     index++;
                     IntToByte(IndexOfInfopacketIn, ref index, VByte);
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
@@ -612,15 +609,12 @@ namespace Kurs_Project_var25
                 #endregion
                 #region H
                 case 'H':
-                    VByte = new byte[Length + 4];
+                    VByte = new byte[Length + 3];
                     char[] FName = SendedFileName.ToCharArray();
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
                     VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
                     index++;
-                    VByte[index] = IndexOfFile;
-                    index++;
-
                     byte[] lol = ANSI.GetBytes(FName);
                     foreach (byte ch in lol)
                     {
@@ -635,12 +629,10 @@ namespace Kurs_Project_var25
                 #endregion
                 #region F
                 case 'F':
-                    VByte = new byte[5];
+                    VByte = new byte[4];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
                     VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
-                    index++;
-                    VByte[index] = IndexOfFile;
                     index++;
                     if (FinalizationStatus == 1)
                     {
@@ -667,17 +659,15 @@ namespace Kurs_Project_var25
                         break;
                     }
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-                    COMPort.Write(VByte, 0, VByte.Length);        //Запись на порт
+                    COMPort.Write(VByte, 0, VByte.Length);                                                 //Запись на порт
                     break;
                 #endregion
                 #region Y
                 case 'Y':
-                    VByte = new byte[4];
+                    VByte = new byte[3];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
                     VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
-                    index++;
-                    VByte[index] = IndexOfFile;
                     index++;
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                     COMPort.Write(VByte, 0, VByte.Length);        //Запись на порт
@@ -685,12 +675,10 @@ namespace Kurs_Project_var25
                 #endregion
                 #region N
                 case 'N':
-                    VByte = new byte[4];
+                    VByte = new byte[3];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
                     VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
-                    index++;
-                    VByte[index] = IndexOfFile;
                     index++;
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                     COMPort.Write(VByte, 0, VByte.Length);        //Запись на порт
@@ -715,9 +703,16 @@ namespace Kurs_Project_var25
                 //{
                 #region Чтение данных из потока
                 byte[] InfoBuffer = new byte[] { };
-                Array.Resize(ref InfoBuffer, COMPort.BytesToRead);
-                COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
-
+                try
+                {
+                    Array.Resize(ref InfoBuffer, COMPort.BytesToRead);
+                    COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
+                }
+                catch
+                {
+                    Array.Resize(ref InfoBuffer, COMPort.BytesToRead);
+                    COMPort.Read(InfoBuffer, 0, COMPort.BytesToRead);
+                }
                 #endregion
                 if (InfoBuffer.Length != 0)
                 {
@@ -738,13 +733,13 @@ namespace Kurs_Project_var25
                         case 'I':
                             {
                                 MaxIndexOfInfopacketIn = ByteToInt(HelpBuffer, 1);
-                                byte[] ret = new byte[HelpBuffer.Length - 14];
-                                for (int hf = 14; hf < HelpBuffer.Length; hf++)
-                                    ret[hf - 14] = HelpBuffer[hf];
+                                byte[] ret = new byte[HelpBuffer.Length - 13];
+                                for (int hf = 13; hf < HelpBuffer.Length; hf++)
+                                    ret[hf - 13] = HelpBuffer[hf];
                                 Decode(ref ret);
                                 if (ErrorInfo == false)
                                 {
-                                    uint MAX = ByteToInt(HelpBuffer, 10);
+                                    uint MAX = ByteToInt(HelpBuffer, 9);
                                     IndexOfInfopacketIn++;
                                     UIContext.Send(d => GetProgressBar.Value = (int)((IndexOfInfopacketIn / (double)MAX) * 100), 0);
                                     char[] dof = ANSI.GetChars(ret);
@@ -754,7 +749,10 @@ namespace Kurs_Project_var25
                                 else
                                     ErrorInfo = false;
                                 if (SHeader == false)
+                                {
+                                    //Thread.Sleep(50);
                                     PartPacking(new byte[] { }, 'A', 0);
+                                }
                                 else
                                 {
                                     IndexOfInfopacketOut++;
@@ -766,6 +764,7 @@ namespace Kurs_Project_var25
                                     else
                                     {
                                         NullVariablesHost();
+                                        //Thread.Sleep(50);
                                         PartPacking(new byte[] { }, 'A', 0);
                                     }
                                 }
@@ -775,7 +774,7 @@ namespace Kurs_Project_var25
                         #region ACK-пакеты: отвечают за подтверждение принятия инфопакет или за запрос на повторную передачу
                         case 'A':
                             {
-                                IndexOfInfopacketOut = ByteToInt(HelpBuffer, 2);
+                                IndexOfInfopacketOut = ByteToInt(HelpBuffer, 1);
                                 UIContext.Send(d => SendProgressBar.Value = (int)((IndexOfInfopacketOut / (double)CountPackets) * 100), 0);
                                 if (IndexOfInfopacketOut != CountPackets)
                                 {
@@ -796,10 +795,10 @@ namespace Kurs_Project_var25
                         case 'H':
                             {
                                 RHeader = true;
-                                char[] met = new char[HelpBuffer.Length - 2];
-                                for (int hf = 2; hf < HelpBuffer.Length; hf++)
-                                    met[hf - 2] = Convert.ToChar(HelpBuffer[hf]);
-                                AppliedFileName = new string(ANSI.GetChars(HelpBuffer, 2, HelpBuffer.Length - 2));
+                                char[] met = new char[HelpBuffer.Length - 1];
+                                for (int hf = 1; hf < HelpBuffer.Length; hf++)
+                                    met[hf - 1] = Convert.ToChar(HelpBuffer[hf]);
+                                AppliedFileName = new string(ANSI.GetChars(HelpBuffer, 1, HelpBuffer.Length - 1));
                                 GetMessage(true);
                                 if (Properties.Settings.Default.SequentialMode == true)
                                     SequentialHide(true);
@@ -809,12 +808,12 @@ namespace Kurs_Project_var25
                         #region FIN-пакеты: окончание передачи, закрытие соединения
                         case 'F':
                             {
-                                if (HelpBuffer[2] == 1)
+                                if (HelpBuffer[1] == 1)
                                 {
                                     FinalizationStatus = 2;
                                     PartPacking(new byte[] { }, 'F', 0);
                                 }
-                                else if (HelpBuffer[2] == 2)
+                                else if (HelpBuffer[1] == 2)
                                 {
                                     FinalizationStatus = 3;
                                     PartPacking(new byte[] { }, 'F', 0);
