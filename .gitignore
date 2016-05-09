@@ -19,3 +19,5 @@
 *.lib
 *.sbr
 #Untracked folders
+Kurs_Project_var25/bin/
+Kurs_Project_var25/obj/
