@@ -621,7 +621,7 @@ namespace Kurs_Project_var25
                     if (lastpack == true && IndexOfMas == CountPackets - 1)
                     {
                         int lastLength = byFileData.Length - bytesIndex;
-                        Array.Resize(ref WriteData[IndexOfMas], lastLength + 3);
+                        Array.Resize(ref WriteData[IndexOfMas], lastLength);
                     }
                     else
                         Array.Resize(ref WriteData[IndexOfMas], i);
@@ -848,7 +848,9 @@ namespace Kurs_Project_var25
                                     IndexOfInfopacketOut++;
                                     UIContext.Send(d => SendProgressBar.Value = (int)((IndexOfInfopacketOut / (double)CountPackets) * 100), 0);
                                     if (IndexOfInfopacketOut != CountPackets)
+                                    {
                                         PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
+                                    }
                                     else
                                     {
                                         NullVariablesHost();
@@ -864,7 +866,15 @@ namespace Kurs_Project_var25
                                 IndexOfInfopacketOut = ByteToInt(HelpBuffer, 2);
                                 UIContext.Send(d => SendProgressBar.Value = (int)((IndexOfInfopacketOut / (double)CountPackets) * 100), 0);
                                 if (IndexOfInfopacketOut != CountPackets)
-                                    PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
+                                {
+                                    if (MaxIndexOfInfopacketIn != IndexOfInfopacketIn)
+                                    {
+                                        UIContext.Send(d => GetProgressBar.Value = 0, 0);
+                                        PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
+                                    }
+                                    else
+                                        PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
+                                }
                                 else
                                     PartPacking(new byte[] { }, 'F', 0);
                             }
@@ -901,6 +911,7 @@ namespace Kurs_Project_var25
                                 {
                                     NullVariablesClient();
                                     COMPort.RtsEnable = true;
+                                    //UIContext.Send(d => GetProgressBar.Value = 0, 0);
                                     MessageBox.Show("Передача завершена");
                                 }
                             }
