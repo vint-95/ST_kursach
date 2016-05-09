@@ -47,8 +47,6 @@
             this.ProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ChooseFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ConsoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.AutoAcceptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.RestoreLostPacketsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ConnSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -216,8 +214,6 @@
             this.ProgramToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ChooseFileToolStripMenuItem,
             this.ConsoleToolStripMenuItem,
-            this.AutoAcceptToolStripMenuItem,
-            this.RestoreLostPacketsToolStripMenuItem,
             this.ConnSettingsToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.ProgramToolStripMenuItem.Name = "ProgramToolStripMenuItem";
@@ -227,7 +223,7 @@
             // ChooseFileToolStripMenuItem
             // 
             this.ChooseFileToolStripMenuItem.Name = "ChooseFileToolStripMenuItem";
-            this.ChooseFileToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ChooseFileToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.ChooseFileToolStripMenuItem.Text = "Выбрать файл...";
             this.ChooseFileToolStripMenuItem.Click += new System.EventHandler(this.ChooseFileToolStripMenuItem_Click);
             // 
@@ -235,39 +231,21 @@
             // 
             this.ConsoleToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.ConsoleToolStripMenuItem.Name = "ConsoleToolStripMenuItem";
-            this.ConsoleToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ConsoleToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.ConsoleToolStripMenuItem.Text = "Консоль?";
             this.ConsoleToolStripMenuItem.Click += new System.EventHandler(this.ConsoleToolStripMenuItem_Click);
-            // 
-            // AutoAcceptToolStripMenuItem
-            // 
-            this.AutoAcceptToolStripMenuItem.CheckOnClick = true;
-            this.AutoAcceptToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.AutoAcceptToolStripMenuItem.Name = "AutoAcceptToolStripMenuItem";
-            this.AutoAcceptToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
-            this.AutoAcceptToolStripMenuItem.Text = "Автоматически подтверждать принятие";
-            this.AutoAcceptToolStripMenuItem.Click += new System.EventHandler(this.AutoAcceptToolStripMenuItem_Click);
-            // 
-            // RestoreLostPacketsToolStripMenuItem
-            // 
-            this.RestoreLostPacketsToolStripMenuItem.CheckOnClick = true;
-            this.RestoreLostPacketsToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.RestoreLostPacketsToolStripMenuItem.Name = "RestoreLostPacketsToolStripMenuItem";
-            this.RestoreLostPacketsToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
-            this.RestoreLostPacketsToolStripMenuItem.Text = "Прерывать передачу при ошибке?";
-            this.RestoreLostPacketsToolStripMenuItem.Click += new System.EventHandler(this.RestoreLostPacketsToolStripMenuItem_Click);
             // 
             // ConnSettingsToolStripMenuItem
             // 
             this.ConnSettingsToolStripMenuItem.Name = "ConnSettingsToolStripMenuItem";
-            this.ConnSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ConnSettingsToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.ConnSettingsToolStripMenuItem.Text = "Свойства соединения";
             this.ConnSettingsToolStripMenuItem.Click += new System.EventHandler(this.ConnSettingsToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(293, 22);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.ExitToolStripMenuItem.Text = "Выход";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
@@ -354,7 +332,6 @@
         private System.Windows.Forms.MenuStrip MainMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem ProgramToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ChooseFileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem AutoAcceptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AuthorsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
@@ -367,7 +344,6 @@
         private System.Windows.Forms.StatusStrip MainStatusStrip;
         private System.Windows.Forms.ToolStripStatusLabel ConnectionStatusTSSL;
         private System.Windows.Forms.ToolStripMenuItem ConnSettingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem RestoreLostPacketsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ConsoleToolStripMenuItem;
     }
 }

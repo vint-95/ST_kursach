@@ -16,16 +16,13 @@ namespace Kurs_Project_var25
     public partial class MainForm : Form
     {
         #region Общие глобальные переменные
-        private bool AutoApplying = false;  //Переменная для автоматического принятия файлов
         Thread ConnectionThread;            //Поток на отслеживание соединения
         Encoding ANSI = Encoding.Default;   //С помощью этого задаем кодировку ANSI
         bool BigFile = false;               //Проверка на величину файла
         static bool ErrorInfo = false;      //Информация об ошибке
         uint Frequency = 100;               //Частота чтения входящего потока
         byte FinalizationStatus = 1;        //Текущий статус окончания передачи
-        bool Restore = false;               //Восстановление передачи (а надо ли)
         bool Console = false;               //Вывод в RichTextBox
-        byte IndexOfFile;                   //Идентификатор для файла
         bool ConnStatus = false;            //Текущий статус порта
         System.Timers.Timer OP = new System.Timers.Timer();
         #endregion
@@ -37,7 +34,6 @@ namespace Kurs_Project_var25
         bool RHeader = false;               //Получен заголовок
         uint IndexOfInfopacketIn = 0;         //Идентификатор для пакета (получение)
         uint MaxIndexOfInfopacketIn = 0;      //Количество пакетов (получение)
-        bool RestoringTransfer = false;
         #endregion
 
         #region Переменные, относящиеся к выходному потоку (отправка)
@@ -46,8 +42,7 @@ namespace Kurs_Project_var25
         byte[][] WriteData;                 //Отправляемые данные
         byte[] byFileData = new byte[] { }; //Файл, заносимый в одномерный массив
         uint IndexOfInfopacketOut = 0;      //Идентификатор для пакета (отправка)
-        int CountPackets = 0;                 //Максимальный индекс текущего отправляемого файла 
-        Thread Restoringthread;
+        int CountPackets = 0;                 //Максимальный индекс текущего отправляемого файла
 
         #endregion
 
@@ -93,9 +88,6 @@ namespace Kurs_Project_var25
             COMPort.DtrEnable = true;
             COMPort.RtsEnable = false;
             COMPort.Handshake = Handshake.None;
-            //MaxIndexOfInfopacketOut = (uint)Properties.Settings.Default.OutBuffer;
-            //Restore = Properties.Settings.Default.Restore;
-            AutoApplying = Properties.Settings.Default.AutomatedGet;
             UIContext = SynchronizationContext.Current;
             ConnectionThread = new Thread(Connect);
             SynchronizationThread = new Thread(ReadingThread);
@@ -129,41 +121,14 @@ namespace Kurs_Project_var25
                     }
                 }
             }
-            //Restoringthread = new Thread(RestoringConnecion);
-            //Restoringthread.Start();
             ConnectionThread.Start();
             SynchronizationThread.Start();
             InfoRTB.Visible = false;
             this.Size = new Size(803, 335);
         }
 
-        //private void RestoringConnecion()
-        //{
-        //    OP.AutoReset = true;
-        //    OP.Interval = Properties.Settings.Default.ReadTimeout;
-        //    OP.Start();
-        //    while (true)
-        //    {
-        //        Thread.Sleep((int)Properties.Settings.Default.Frequency);
-        //        OP.Elapsed += OnTimedEvent;
-        //    }
-        //}
-
-        //private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        //{
-        //    if (RestoringTransfer == false && MaxIndexOfInfopacketIn != IndexOfInfopacketIn)
-        //    {
-        //        PartPacking(new byte[] { }, 'A', 0);
-        //    }
-        //    else
-        //    {
-        //        RestoringTransfer = false;
-        //    }
-        //}
-
         public byte[] ReadLocalFile(string sLocalFile)
         {
-            //Занесение в массив через цикл - реализовать
             using (FileStream oFS = new FileStream(sLocalFile, FileMode.Open, FileAccess.Read))
             {
                 using (BinaryReader oBR = new BinaryReader(oFS))
@@ -219,16 +184,6 @@ namespace Kurs_Project_var25
             }
         }
 
-        private void AutoAcceptToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            AutoApplying = AutoAcceptToolStripMenuItem.Checked;
-        }
-
-        private void RestoreLostPacketsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Restore = RestoreLostPacketsToolStripMenuItem.Checked;
-        }
-
         private void ChooseFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ChoosePath(false);
@@ -259,7 +214,7 @@ namespace Kurs_Project_var25
                 }
                 return false;
             }
-            if (AutoApplying == false && flag == true)
+            if (flag == true)
             {
                 AcceptedSaveFileDialog.FileName = AppliedFileName;
                 if (AcceptedSaveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -427,20 +382,6 @@ namespace Kurs_Project_var25
         {
             if (SendedFileName != null)
             {
-                //Заносим в буфер недопереданных файлов (не недокачанных!)
-                //if (Properties.Settings.Default.NotCompletedFiles != null)
-                //{
-                //    IndexOfFile = (byte)Properties.Settings.Default.NotCompletedFiles.Count;
-                //    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
-                //    Properties.Settings.Default.Save();
-                //}
-                //else
-                //{
-                //    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
-                //    Properties.Settings.Default.NotCompletedFiles.Add(SendPathTextBox.Text);
-                //    Properties.Settings.Default.Save();
-                //}
-
                 PartPacking(new byte[] { }, 'H', (uint)SendedFileName.Length);
 
                 InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
@@ -497,20 +438,6 @@ namespace Kurs_Project_var25
                 UIContext.Send(g => SendGroupBox.Visible = true, null);
         }
 
-        ///// <summary>
-        ///// Кодирование по алгоритму Хэмминга
-        ///// </summary>
-        ///// <param name="information">Необработанный байт-массив с данными</param>
-        //static byte[] HammingCoding(ref byte[] information, bool flag)
-        //{
-        //    //byte[] msg = new byte[] {}; //Вспомогательный массив для того, чтобы не затирать старый. Нафиг его
-        //    if(flag == false)
-        //        Code(ref information);
-        //    else
-        //        Decode(ref information);
-        //    return information;
-        //}
-
         /// <summary>
         /// Функция, принимаемая потоком. 
         /// Служит для соединения двух компьютеров и обозначения текущего статуса соединения
@@ -528,7 +455,6 @@ namespace Kurs_Project_var25
                         {
                             ConnStatus = true;
                             UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: активно", null);
-                            //UIContext.Send(d => GetProgressBar.Value = (int)((IndexOfInfopacket / CountPackets) * 100), 0);
                         }
                         if (COMPort.DsrHolding == false)
                         {
@@ -537,19 +463,9 @@ namespace Kurs_Project_var25
                         }
                         if (((RHeader == true) || (SHeader == true)) & (ConnStatus == false))
                         {
-                            //Добавить сохранение индекса для восстановления передачи (но не сюда)
-
-
                             UIContext.Send(d => InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана."), null);
-
                             RHeader = false;
-                            //RData = false;
                             SHeader = false;
-                            //SData = false;
-                            //SaveFileStream.Close();
-                            //SaveFileStream.Dispose();
-                            //SendFileStream.Close();
-                            //SendFileStream.Dispose();
                         }
                     }
                 }
@@ -562,8 +478,6 @@ namespace Kurs_Project_var25
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Properties.Settings.Default.AutomatedGet = AutoApplying;
-            Properties.Settings.Default.Restore = Restore;
             ConnStatus = false;
             SynchronizationThread.Abort();
             ConnectionThread.Abort();
@@ -597,7 +511,6 @@ namespace Kurs_Project_var25
 
         private void FileDividing()
         {
-            //int op = Properties.Settings.Default.OutBuffer;
             int i = CheckSize(Properties.Settings.Default.OutBuffer);
             CountPackets = byFileData.Length / i;
             bool lastpack = false;
@@ -639,7 +552,6 @@ namespace Kurs_Project_var25
             SHeader = false;
             WriteData = new byte[][] { };
             IndexOfInfopacketOut = 0;
-            //MaxIndexOfInfopacketOut = 0;
             FinalizationStatus = 1;
             byFileData = new byte[] { };
             CountPackets = 0;
@@ -663,6 +575,7 @@ namespace Kurs_Project_var25
         {
             byte[] VByte = new byte[] { };
             int index = 0;
+            byte IndexOfFile = 0;
             switch (Type)
             {
                 #region I
@@ -739,8 +652,6 @@ namespace Kurs_Project_var25
                         VByte[index] = FinalizationStatus;
                         index++;
                         NullVariablesClient();
-                        //VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
-                        //COMPort.Write(VByte, 0, VByte.Length);
                     }
                     else
                     {
@@ -751,6 +662,7 @@ namespace Kurs_Project_var25
                         NullVariablesHost();
                         COMPort.RtsEnable = true;
                         FinalizationStatus = 1;
+                        UIContext.Send(d => GetLabel.Text = "", 0);
                         MessageBox.Show("Передача завершена");
                         break;
                     }
@@ -911,7 +823,7 @@ namespace Kurs_Project_var25
                                 {
                                     NullVariablesClient();
                                     COMPort.RtsEnable = true;
-                                    //UIContext.Send(d => GetProgressBar.Value = 0, 0);
+                                    UIContext.Send(d => GetLabel.Text = "",0);
                                     MessageBox.Show("Передача завершена");
                                 }
                             }
@@ -920,26 +832,6 @@ namespace Kurs_Project_var25
                         #region YES-пакеты: положительный ответ на запрос о передаче файла
                         case 'Y':
                             {
-                                #region Параметры для сохранения недокачанных файлов
-                                //byte FileForSending = HelpBuffer[1];
-                                //if (Properties.Settings.Default.NotCompletedFiles != null)
-                                //    Properties.Settings.Default.NotCompletedFiles.Add("elelel");
-                                //else
-                                //{
-                                //    Properties.Settings.Default.NotCompletedFiles = new System.Collections.Specialized.StringCollection();
-                                //    Properties.Settings.Default.NotCompletedFiles.Add("elelel");
-                                //    Properties.Settings.Default.Save();
-                                //}
-                                //if (Properties.Settings.Default.NotCompletedFilesIDs != null)
-                                //    Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
-                                //else
-                                //{
-                                //    Properties.Settings.Default.NotCompletedFilesIDs = new System.Collections.ArrayList();
-                                //    Properties.Settings.Default.NotCompletedFilesIDs.Add(FileForSending);
-                                //    Properties.Settings.Default.Save();
-                                //}
-                                #endregion
-                                //FileDividing();
                                 SHeader = true;
                                 PartPacking(WriteData[0], 'I', (uint)WriteData[0].Length);
                             }
