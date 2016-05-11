@@ -22,9 +22,7 @@ namespace Kurs_Project_var25
         static bool ErrorInfo = false;      //Информация об ошибке
         uint Frequency = 100;               //Частота чтения входящего потока
         byte FinalizationStatus = 1;        //Текущий статус окончания передачи
-        bool Console = false;               //Вывод в RichTextBox
         bool ConnStatus = false;            //Текущий статус порта
-        System.Timers.Timer OP = new System.Timers.Timer();
         #endregion
 
         #region Переменные, относящиеся к входному потоку (чтение)
@@ -32,8 +30,8 @@ namespace Kurs_Project_var25
         Thread SynchronizationThread;       //Поток на чтение
         SynchronizationContext UIContext;   //Вещь для синхронизации контролов в форме. Очень нужна для управления контролами из не-родных потоков
         bool RHeader = false;               //Получен заголовок
-        uint IndexOfInfopacketIn = 0;         //Идентификатор для пакета (получение)
-        uint MaxIndexOfInfopacketIn = 0;      //Количество пакетов (получение)
+        uint IndexOfInfopacketIn = 0;       //Идентификатор для кадра (получение)
+        uint MaxIndexOfInfopacketIn = 0;    //Количество кадров (получение)
         #endregion
 
         #region Переменные, относящиеся к выходному потоку (отправка)
@@ -41,9 +39,8 @@ namespace Kurs_Project_var25
         bool SHeader = false;               //Отправлен заголовок
         byte[][] WriteData;                 //Отправляемые данные
         byte[] byFileData = new byte[] { }; //Файл, заносимый в одномерный массив
-        uint IndexOfInfopacketOut = 0;      //Идентификатор для пакета (отправка)
-        int CountPackets = 0;                 //Максимальный индекс текущего отправляемого файла
-
+        uint IndexOfInfopacketOut = 0;      //Идентификатор для кадра (отправка)
+        int CountPackets = 0;               //Максимальный индекс текущего отправляемого файла
         #endregion
 
 
@@ -123,8 +120,6 @@ namespace Kurs_Project_var25
             }
             ConnectionThread.Start();
             SynchronizationThread.Start();
-            InfoRTB.Visible = false;
-            this.Size = new Size(803, 335);
         }
 
         public byte[] ReadLocalFile(string sLocalFile)
@@ -145,24 +140,6 @@ namespace Kurs_Project_var25
             }
         }
 
-        private void ConsoleToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (Console == true)
-            {
-                Console = false;
-                InfoRTB.Visible = false;
-                this.Size = new Size(803, 335);
-                ConsoleToolStripMenuItem.Checked = false;
-            }
-            else
-            {
-                Console = true;
-                InfoRTB.Visible = true;
-                this.Size = new Size(803, 558);
-                ConsoleToolStripMenuItem.Checked = true;
-            }
-        }
-
         private void ChooseFileButton_Click(object sender, EventArgs e)
         {
             ChoosePath(false);
@@ -170,7 +147,7 @@ namespace Kurs_Project_var25
 
         private void AuthorsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Данный курсовой проект по дисциплине\n\"Сетевые технологии в АСОИУ\" сделали:\nЕгоров Алексей ИУ5-64\nТимур Мусин ИУ5-64\nВострокнутов Илья ИУ5-64", "Авторы", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show("Данный курсовой проект по дисциплине\n\"Сетевые технологии в АСОИУ\" сделали:\nЕгоров Алексей ИУ5-64\nМусин Тимур ИУ5-64\nВострокнутов Илья ИУ5-64", "Авторы", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -331,6 +308,7 @@ namespace Kurs_Project_var25
             System.Collections.BitArray bitMsg = new System.Collections.BitArray(msg);
             int length = bitMsg.Length - 16 - firstCheck;
             int numParts = length / 15;
+            int errIndx = -1;
             System.Collections.BitArray decodeBitMsg = new System.Collections.BitArray(numParts * 11 - secondCheck);
             for (int i = 0; i < numParts; ++i)
             {
@@ -351,7 +329,8 @@ namespace Kurs_Project_var25
                 if (c1 || c2 || c3 || c4)
                 {
                     ErrorInfo = true;
-                    return;
+                    errIndx = ((c1) ? 1 : 0) + ((c2) ? 2 : 0) + ((c3) ? 4 : 0) + ((c4) ? 8 : 0);
+                    bitMsg.Set(current + errIndx, bitMsg.Get(current + errIndx));
                 }
                 System.Collections.BitArray _11bitDecodeArr = new System.Collections.BitArray(11);
                 _11bitDecodeArr[0] = bitMsg.Get(current + 2);
@@ -383,8 +362,6 @@ namespace Kurs_Project_var25
             if (SendedFileName != null)
             {
                 PartPacking(new byte[] { }, 'H', (uint)SendedFileName.Length);
-
-                InfoRTB.AppendText("\nЖдём ответа принимающей стороны");
             }
             else
                 MessageBox.Show("Пожалуйста, выберите файл.");
@@ -463,7 +440,7 @@ namespace Kurs_Project_var25
                         }
                         if (((RHeader == true) || (SHeader == true)) & (ConnStatus == false))
                         {
-                            UIContext.Send(d => InfoRTB.AppendText("\nВо время передачи произошла ошибка.\nПередача прервана."), null);
+                            UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: прервано", null);
                             RHeader = false;
                             SHeader = false;
                         }
@@ -471,7 +448,7 @@ namespace Kurs_Project_var25
                 }
                 catch (TimeoutException)
                 {
-                    UIContext.Send(d => InfoRTB.AppendText("\nВремя ожидания передачи/приёма сообщения истекло"), null);
+                    UIContext.Send(d => ConnectionStatusTSSL.Text = "Соединение: превышено ожидание", null);
                 }
             }
         }
@@ -562,6 +539,8 @@ namespace Kurs_Project_var25
             UIContext.Send(d => GetProgressBar.Value = 0, 0);
             AppliedFileName = null;
             RHeader = false;
+            IndexOfInfopacketIn = 0;
+            MaxIndexOfInfopacketIn = 0;
         }
 
         /// <summary>
@@ -570,12 +549,11 @@ namespace Kurs_Project_var25
         /// <param name="InfByte">Массив данных</param>
         /// <param name="Type">Тип передаваемых данных</param>
         /// <param name="Length">Длина передаваемых данных</param>
-        /// <returns>Готовый к отправке пакет с данными</returns>
+        /// <returns>Готовый к отправке кадр с данными</returns>
         private byte[] PartPacking(byte[] InfByte, char Type, uint Length)
         {
             byte[] VByte = new byte[] { };
             int index = 0;
-            //byte IndexOfFile = 0;
             switch (Type)
             {
                 #region I
@@ -583,7 +561,7 @@ namespace Kurs_Project_var25
                     VByte = new byte[Length + 15];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
-                    VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                    VByte[index] = Convert.ToByte(Type);                                                    //Тип кадра
                     index++;
                     IntToByte(Length, ref index, VByte);
                     IntToByte(IndexOfInfopacketOut, ref index, VByte);
@@ -596,11 +574,10 @@ namespace Kurs_Project_var25
                 #endregion
                 #region A
                 case 'A':
-                    Thread.Sleep(66);
                     VByte = new byte[7];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Старт-байт
                     index++;
-                    VByte[index] = Convert.ToByte(Type);                                                   //Тип пакета
+                    VByte[index] = Convert.ToByte(Type);                                                   //Тип кадра
                     index++;
                     IntToByte(IndexOfInfopacketIn, ref index, VByte);
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
@@ -613,7 +590,7 @@ namespace Kurs_Project_var25
                     char[] FName = SendedFileName.ToCharArray();
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
-                    VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                    VByte[index] = Convert.ToByte(Type);                                                    //Тип кадра
                     index++;
                     byte[] lol = ANSI.GetBytes(FName);
                     foreach (byte ch in lol)
@@ -623,7 +600,7 @@ namespace Kurs_Project_var25
                     }
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                     COMPort.Write(VByte, 0, VByte.Length);                                                   //Запись на порт
-                    if (RHeader == true)
+                    if (SHeader == true)
                         PartPacking(new byte[] { }, 'A', 0);
                     break;
                 #endregion
@@ -632,7 +609,7 @@ namespace Kurs_Project_var25
                     VByte = new byte[4];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
-                    VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                    VByte[index] = Convert.ToByte(Type);                                                    //Тип кадра
                     index++;
                     if (FinalizationStatus == 1)
                     {
@@ -667,7 +644,7 @@ namespace Kurs_Project_var25
                     VByte = new byte[3];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
-                    VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                    VByte[index] = Convert.ToByte(Type);                                                    //Тип кадра
                     index++;
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                     COMPort.Write(VByte, 0, VByte.Length);        //Запись на порт
@@ -678,7 +655,7 @@ namespace Kurs_Project_var25
                     VByte = new byte[3];
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);   //Старт-байт
                     index++;
-                    VByte[index] = Convert.ToByte(Type);                                                    //Тип пакета
+                    VByte[index] = Convert.ToByte(Type);                                                    //Тип кадра
                     index++;
                     VByte[index] = Byte.Parse("FF", System.Globalization.NumberStyles.AllowHexSpecifier);  //Стоп-байт
                     COMPort.Write(VByte, 0, VByte.Length);        //Запись на порт
@@ -698,9 +675,6 @@ namespace Kurs_Project_var25
             while (true)
             {
                 Thread.Sleep((int)Frequency);
-                //Будет работать, если порт открыт и готов к приёму
-                //while (ConnStatus == true && COMPort.CtsHolding == true)
-                //{
                 #region Чтение данных из потока
                 byte[] InfoBuffer = new byte[] { };
                 try
@@ -729,7 +703,7 @@ namespace Kurs_Project_var25
                     char TypeOfPacket = Convert.ToChar(HelpBuffer[0]);
                     switch (TypeOfPacket)
                     {
-                        #region Информационные пакеты
+                        #region Информационные кадры
                         case 'I':
                             {
                                 MaxIndexOfInfopacketIn = ByteToInt(HelpBuffer, 1);
@@ -750,7 +724,6 @@ namespace Kurs_Project_var25
                                     ErrorInfo = false;
                                 if (SHeader == false)
                                 {
-                                    //Thread.Sleep(50);
                                     PartPacking(new byte[] { }, 'A', 0);
                                 }
                                 else
@@ -764,14 +737,13 @@ namespace Kurs_Project_var25
                                     else
                                     {
                                         NullVariablesHost();
-                                        //Thread.Sleep(50);
                                         PartPacking(new byte[] { }, 'A', 0);
                                     }
                                 }
                             }
                             break;
                         #endregion
-                        #region ACK-пакеты: отвечают за подтверждение принятия инфопакет или за запрос на повторную передачу
+                        #region ACK-кадры: отвечают за подтверждение принятия кадра или за запрос на повторную передачу
                         case 'A':
                             {
                                 IndexOfInfopacketOut = ByteToInt(HelpBuffer, 1);
@@ -781,6 +753,7 @@ namespace Kurs_Project_var25
                                     if (MaxIndexOfInfopacketIn != IndexOfInfopacketIn)
                                     {
                                         UIContext.Send(d => GetProgressBar.Value = 0, 0);
+                                        IndexOfInfopacketIn = 0;
                                         PartPacking(WriteData[IndexOfInfopacketOut], 'I', (uint)WriteData[IndexOfInfopacketOut].Length);
                                     }
                                     else
@@ -791,21 +764,21 @@ namespace Kurs_Project_var25
                             }
                             break;
                         #endregion
-                        #region HEAD-пакеты: передают инфо о названии файла
+                        #region HEAD-кадры: передают инфо о названии файла
                         case 'H':
                             {
                                 RHeader = true;
                                 char[] met = new char[HelpBuffer.Length - 1];
                                 for (int hf = 1; hf < HelpBuffer.Length; hf++)
                                     met[hf - 1] = Convert.ToChar(HelpBuffer[hf]);
-                                AppliedFileName = new string(ANSI.GetChars(HelpBuffer, 1, HelpBuffer.Length - 1));
+                                AppliedFileName = new string(ANSI.GetChars(HelpBuffer, 1, HelpBuffer.Length - ((SHeader == true) ? 8 : 1)));
                                 GetMessage(true);
                                 if (Properties.Settings.Default.SequentialMode == true)
                                     SequentialHide(true);
                             }
                             break;
                         #endregion
-                        #region FIN-пакеты: окончание передачи, закрытие соединения
+                        #region FIN-кадры: окончание передачи, закрытие соединения
                         case 'F':
                             {
                                 if (HelpBuffer[1] == 1)
@@ -822,13 +795,14 @@ namespace Kurs_Project_var25
                                 {
                                     NullVariablesClient();
                                     COMPort.RtsEnable = true;
-                                    UIContext.Send(d => GetLabel.Text = "",0);
+                                    UIContext.Send(d => GetLabel.Text = "", 0);
+
                                     MessageBox.Show("Передача завершена");
                                 }
                             }
                             break;
                         #endregion
-                        #region YES-пакеты: положительный ответ на запрос о передаче файла
+                        #region YES-кадры: положительный ответ на запрос о передаче файла
                         case 'Y':
                             {
                                 SHeader = true;
@@ -836,11 +810,15 @@ namespace Kurs_Project_var25
                             }
                             break;
                         #endregion
-                        #region NO-пакеты: отрицательный ответ на запрос о передаче файла
+                        #region NO-кадры: отрицательный ответ на запрос о передаче файла
                         case 'N':
                             {
                                 SHeader = false;
                                 byFileData = new byte[] { };
+                                if (RHeader == true)
+                                {
+                                    PartPacking(new byte[] { }, 'A', 0);
+                                }
                             }
                             break;
                         #endregion

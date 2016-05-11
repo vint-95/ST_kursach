@@ -42,11 +42,9 @@
             this.ApplyButton = new System.Windows.Forms.Button();
             this.GetMessageLabel = new System.Windows.Forms.Label();
             this.GetProgressBar = new System.Windows.Forms.ProgressBar();
-            this.InfoRTB = new System.Windows.Forms.RichTextBox();
             this.MainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.ProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ChooseFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ConsoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ConnSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -188,15 +186,6 @@
             this.GetProgressBar.Size = new System.Drawing.Size(758, 23);
             this.GetProgressBar.TabIndex = 0;
             // 
-            // InfoRTB
-            // 
-            this.InfoRTB.Location = new System.Drawing.Point(12, 307);
-            this.InfoRTB.Name = "InfoRTB";
-            this.InfoRTB.ReadOnly = true;
-            this.InfoRTB.Size = new System.Drawing.Size(773, 216);
-            this.InfoRTB.TabIndex = 2;
-            this.InfoRTB.Text = "Здесь будет отображаться информация о передаче файлов";
-            // 
             // MainMenuStrip
             // 
             this.MainMenuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
@@ -213,7 +202,6 @@
             // 
             this.ProgramToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ChooseFileToolStripMenuItem,
-            this.ConsoleToolStripMenuItem,
             this.ConnSettingsToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.ProgramToolStripMenuItem.Name = "ProgramToolStripMenuItem";
@@ -226,14 +214,6 @@
             this.ChooseFileToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.ChooseFileToolStripMenuItem.Text = "Выбрать файл...";
             this.ChooseFileToolStripMenuItem.Click += new System.EventHandler(this.ChooseFileToolStripMenuItem_Click);
-            // 
-            // ConsoleToolStripMenuItem
-            // 
-            this.ConsoleToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.ConsoleToolStripMenuItem.Name = "ConsoleToolStripMenuItem";
-            this.ConsoleToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            this.ConsoleToolStripMenuItem.Text = "Консоль?";
-            this.ConsoleToolStripMenuItem.Click += new System.EventHandler(this.ConsoleToolStripMenuItem_Click);
             // 
             // ConnSettingsToolStripMenuItem
             // 
@@ -291,9 +271,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(797, 530);
+            this.ClientSize = new System.Drawing.Size(797, 315);
             this.Controls.Add(this.MainStatusStrip);
-            this.Controls.Add(this.InfoRTB);
             this.Controls.Add(this.GetGroupBox);
             this.Controls.Add(this.SendGroupBox);
             this.Controls.Add(this.MainMenuStrip);
@@ -320,7 +299,6 @@
 
         private System.Windows.Forms.GroupBox SendGroupBox;
         private System.Windows.Forms.GroupBox GetGroupBox;
-        private System.Windows.Forms.RichTextBox InfoRTB;
         private System.Windows.Forms.TextBox SendPathTextBox;
         private System.Windows.Forms.Label PathSendLabel;
         private System.Windows.Forms.Button SendFileButton;
@@ -344,7 +322,6 @@
         private System.Windows.Forms.StatusStrip MainStatusStrip;
         private System.Windows.Forms.ToolStripStatusLabel ConnectionStatusTSSL;
         private System.Windows.Forms.ToolStripMenuItem ConnSettingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ConsoleToolStripMenuItem;
     }
 }
 
